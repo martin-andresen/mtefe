@@ -1,4 +1,3 @@
-*! mtefeplot v1.9 03apr2019
 * Author: Martin Eckhoff Andresen
 * This program is part of the mtefe package.
 
