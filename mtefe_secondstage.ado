@@ -1,4 +1,3 @@
-			*! mtefe_secondstage v1.82 28may2018
 			* Author: Martin Eckhoff Andresen
 			* This program is part of the mtefe package.
 
