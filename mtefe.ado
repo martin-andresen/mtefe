@@ -8,7 +8,6 @@ cap program drop mtefe myivparse IsStop
 		version 13.0
 		syntax anything [if] [in] [fweight pweight], [ /*
 		*/REStricted(varlist fv) 	/*	Control variables restricted to be the same in treated and untreated state
-		*/UPdate				 	/*	Check for updates
 		*/POLynomial(integer 0) 	/* 	Specify degree of polynomial (semiparametric model 2)
 		*/SPLines(numlist sort)		/*  Add splines for second-order and higher polynomial models with knots at numlist
 		*/DEGree(string) 			/* 	Specify degree of local polynomial smooth (semiparametric model), overruled by polynomial option in semiparametric polynomial model
@@ -169,16 +168,7 @@ cap program drop mtefe myivparse IsStop
 			
 			*******************
 			* Parse arguments *
-			*******************
-			
-			if "`update'"=="update"&"`anything'"!="" {
-				noi di in red "Do not combine the update option with specifying variable lists"
-				exit
-				}
-			else if "`update'"=="update" {
-				
-				}
-				
+			*******************				
 
 			myivparse `anything' if `touse'
 			local y `s(lhs)'
