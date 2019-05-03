@@ -1,0 +1,12 @@
+v 1.9
+d mtefe marginal treatment effects estimation with fixed effects
+d Martin Eckhoff Andresen, Statistics Norway
+f mtefe.ado
+f mtefe.sthlp
+f mtefe_secondstage.ado
+f mtefe_gendata.ado
+f mtefeplot.ado
+f mtefeplot.sthlp
+f mtefe_movestay_lf2.ado
+f locpoly3.ado
+f locpoly3.sthlp
