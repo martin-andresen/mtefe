@@ -23,8 +23,7 @@
 {synopt:{opt normalci}}uses normal-based confidence interval rather than percentile-based for bootstrapped estimates. {p_end}
 {synopt:{opt folder(string)}}uses estimates saved in the subfolder {it:string}{p_end}
 {synopt:{opt names(namelist)}}names the plots in the legend using the names in {it:namelist}{p_end}
-{synopt:{opt ytitle(string)}}labels the left y axis {it:string}{p_end}
-{synopt:{opt title(string)}}uses the title {it:string} on the graph{p_end}
+{synopt:{opt graph_opts(string)}} add twoway options to the graph{p_end}
 {synopt:{opt legendtitle(string)}}uses the title {it:string} for the legend{p_end}
 {synopt:{opt level(#)}}plots a #% confidence interval. Default: 95%{p_end}
 {synopt:{opt late}}plots the MTE for the compliers and the LATE weights{p_end}
