@@ -4,7 +4,7 @@ d
 d {bf:M. E. Andresenr, Research department, Statistics Norway}
 d Marginal treatment effects estimation.  After installation, see help {bf:mtefe}, help {bf:mtefeplot}.
 d
-d Distribution-Date: 20190503
+d Distribution-Date: 20190508
 f mtefe.ado
 f mtefe.sthlp
 f mtefe_secondstage.ado
