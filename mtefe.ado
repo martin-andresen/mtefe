@@ -837,7 +837,6 @@ cap program drop mtefe myivparse IsStop
 }
 
 //adapted _iv_parse
-*! version 1.1.4  15apr2013
 
 program myivparse, sclass
 	syntax anything [if] [in]
