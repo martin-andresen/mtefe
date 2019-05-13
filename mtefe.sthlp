@@ -661,6 +661,9 @@ Magne Mogstad also deserve thanks for various help and bug reports.
 {title:Also see}
 
 {p 4 14 2}
+Development version: net install mtefe, from("https://raw.githubusercontent.com/martin-andresen/mtefe/master"){p_end}
+
+{p 4 14 2}
 Article:  {it:Stata Journal}, volume 18, number 1: {browse "http://www.stata-journal.com/article.html?article=st0516":st0516}{p_end}
 
 {p 7 14 2}
