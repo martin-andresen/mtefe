@@ -67,7 +67,7 @@ cap program drop mtefeplot
 				exit 301
 			}
 
-			if strpos("`graph_opts'","ytitle")==0"=="" loc graph_opts ytitle("Treatment effect")
+			if strpos("`graph_opts'","ytitle")==0 loc graph_opts ytitle("Treatment effect")
 
 			if "`cropfigure'"!="" {
 				numlist "`cropfigure'"
