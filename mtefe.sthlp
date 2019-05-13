@@ -634,10 +634,10 @@ Lokshin, M. and Z. Sajaia. 2004.
 {title:Thanks for citing mtefe as follows}
 
 {pstd}
-Andresen, Martin E., (2018). "MTEFE: Stata module to estimate marginal treatment effects". This version INSERT_VERSION_HERE.{p_end}
+Andresen, Martin E., (2018). "MTEFE: Stata module to estimate marginal treatment effects". This version VERSION_DATE.{p_end}
 
 {pstd}
-where you can check your version as follows:{p_end}
+where you can check your version date as follows:{p_end}
 
 {phang2}{cmd:. which mtefe}{p_end}
 
