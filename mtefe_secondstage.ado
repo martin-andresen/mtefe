@@ -529,11 +529,9 @@
 						mat colnames `fullb'=`colnames'
 						mat colnames `fullV'=`colnames'
 						mat rownames `fullV'=`colnames'
-						if `numx'>0 {
-							mat `beta10'=`fullb'[1,"beta1-beta0:"]
-							mat `beta0'=`fullb'[1,"beta0:"]
-							mat `beta1'=`beta10'+`beta0'
-							}
+						mat `beta10'=`fullb'[1,"beta1-beta0:"]
+						mat `beta0'=`fullb'[1,"beta0:"]
+						mat `beta1'=`beta10'+`beta0'
 						if `numr'>0 {
 							mat `betaR'=`fullb'[.,"restricted:"]
 							mat `beta0'=nullmat(`beta0'),`betaR'
