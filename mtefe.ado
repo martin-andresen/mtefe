@@ -1,4 +1,4 @@
-*! mtefe 20190513
+*! mtefe version date 20190513
 * Author: Martin Eckhoff Andresen
 * This program is part of the mtefe package.
 
