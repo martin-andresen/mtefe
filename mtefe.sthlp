@@ -488,7 +488,7 @@ The parametric normal model, fit using maximum likelihood{p_end}
 
 {pstd}
 The semiparametric polynomial model with 50 bootstrap replications {p_end}
-{phang2}{cmd:. mtefe lwage exp exp2 i.district (col=distCol), pol(1) bootreps(50)}{p_end}
+{phang2}{cmd:. mtefe lwage exp exp2 i.district (col=distCol), pol(1) semiparametric bootreps(50)}{p_end}
 
 {pstd}
 The joint normal model where the fixed effects are restricted to be the same in
