@@ -138,7 +138,7 @@ cap program drop mtefeplot
 					loc order order(2 1 3)
 					}
 				}
-				loc twoway `twoway' (`plottype' `mte' `sup'1, lpattern(solid) `cmissing')
+				loc twoway `twoway' (`plottype' `mte'1 `sup'1, lpattern(solid) `cmissing')
 				loc ++cols
 				loc labels `labels' label(`cols' "MTE")
 				loc ++cols
