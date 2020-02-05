@@ -533,7 +533,7 @@
 											cap drop spline0`knot'_`k' spline1`knot'_`k'
 											gen double spline1`knot'_`k'=(1/((1-`p')*(`k'+1)))*(`p'*(1-`knot`knot'')^(`k'+1)-(`p'>`knot`knot'')*(`p'-`knot`knot'')^(`k'+1)) if `touse'
 											gen double spline0`knot'_`k'=(1/(`k'+1))* ((`p'>`knot`knot'')*(`p'-`knot`knot'')^(`k'+1) -  (1-`knot`knot'')^(`k'+1)) if `touse'
-			
+											}
 										}
 									}
 								}
