@@ -510,8 +510,14 @@
 						
 						if "`savekp'"!="" {
 							forvalues k=1/`=`polynomial'' {
-								cap gen double p`k'=((`p'^`k'-1)*`p')/(`k'+1) if `touse'
-								cap if "`separate'"!="" gen double p0`k'=((1-`p'^`k')*`p')/((1-`p')*(`k'+1)) if `touse'
+								cap drop p`k'
+								gen double p`k'=((`p'^`k'-1)*`p')/(`k'+1) if `touse'
+								if "`separate'"!="" {
+									cap drop p0`k'
+									cap drop p1`k'
+									gen double p0`k'=((1-`p'^`k')*`p')/((1-`p')*(`k'+1)) if `touse'
+									gen double p1`k'=((`p'^`k'-1))/(`k'+1) if `touse'
+									}
 								}
 							//Generate splines
 							if "`splines'"!="" {
