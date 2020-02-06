@@ -8,7 +8,7 @@
 					syntax varlist(fv) [if] [in] [fweight pweight], /*
 					*/PROPscore(varname) /*
 					*/link(string) /*
-					*/gammaZ(varname) /*
+					*/gammaz(varname) /*
 					*/treatment(varname) /*
 					*/instruments(varlist fv) /*
 					*/evalgrid(namelist) /*
@@ -138,13 +138,13 @@
 						if "`prte'"!="" mat `uweightsprte'=`7'
 						}
 					else {
-						tempname dhat upsilon uweightslate uweightsatt uweightsatut xweightslate xweightsatt xweightsatut indicator covmat gammaZ
+						tempname dhat upsilon uweightslate uweightsatt uweightsatut xweightslate xweightsatt xweightsatut indicator covmat gammaz
 						`link' `d' `z' `x' `restricted' [`weight'`exp'] if `touse', `firststageoptions'
 						predict double `p' if e(sample)
 						replace `p'=1 if `p'>1&`touse'
 						replace `p'=0 if `p'<0&`touse'
 						
-						predict double `gammaZ' if e(sample), xb
+						predict double `gammaz' if e(sample), xb
 											
 						`regress' `d' `z' `x' `restricted' [`weight'`exp'] if `touse'
 						predict double `dhat' if `touse'
@@ -216,7 +216,7 @@
 						}
 						
 						//Calculate MPRTE weights
-						tempname pcat temppden pden pmean fgammaZ fgammaZmean fv uweightsmprte1 uweightsmprte2 uweightsmprte3 xweightsmprte1
+						tempname pcat temppden pden pmean fgammaz fgammazmean fv uweightsmprte1 uweightsmprte2 uweightsmprte3 xweightsmprte1
 						egen `pcat'=cut(`p') if `touse', at(0.005(0.01)0.995) icodes
 						replace `pcat'=`pcat'+1
 						proportion `pcat' [`weight'`exp'] if `touse'
@@ -229,18 +229,18 @@
 							if _rc!=0 mat `pden'=[nullmat(`pden') \ 0]
 							}
 						
-						if "`link'"=="probit" gen double `fgammaZ'=normalden(`gammaZ') if `touse'
-						else if "`link'"=="logit" gen double `fgammaZ'=exp(`gammaZ')/(1+exp(`gammaZ'))^2 if `touse'
-						else gen double `fgammaZ'=`gammaZ' if `touse'
-						mean `fgammaZ' [`weight'`exp'] if `touse'
-						mat `fgammaZmean'=e(b)
-						gen double `xweightsmprte1'=`fgammaZ'/`fgammaZmean'[1,1]
+						if "`link'"=="probit" gen double `fgammaz'=normalden(`gammaz') if `touse'
+						else if "`link'"=="logit" gen double `fgammaz'=exp(`gammaz')/(1+exp(`gammaz'))^2 if `touse'
+						else gen double `fgammaz'=`gammaz' if `touse'
+						mean `fgammaz' [`weight'`exp'] if `touse'
+						mat `fgammazmean'=e(b)
+						gen double `xweightsmprte1'=`fgammaz'/`fgammazmean'[1,1]
 						
 						if "`link'"=="logit" mata: `fv'=exp(invlogit(st_matrix("`support'"))):/((J(`=rowsof(`support')',1,1)+exp(invlogit(st_matrix("`support'")))):^2)
 						else if "`link'"=="probit" mata: `fv'=normalden(invnormal(st_matrix("`support'")))
 						else mata: `fv'=st_matrix("`support'")
 						
-						mata: st_matrix("`uweightsmprte1'",(st_matrix("`pden'"):*`fv'):/st_matrix("`fgammaZmean'"))
+						mata: st_matrix("`uweightsmprte1'",(st_matrix("`pden'"):*`fv'):/st_matrix("`fgammazmean'"))
 						mat `uweightsmprte2'=`pden'
 						mata: st_matrix("`uweightsmprte3'",(st_matrix("`pden'"):*st_matrix("`support'")):/st_matrix("`pmean'"))
 						
