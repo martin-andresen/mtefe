@@ -604,6 +604,8 @@
 							if "`separate'"!="" {
 								tempname dkdp1 dkdp0 pot1 pot0	
 								mata: mtefecalc_sep(st_matrix("`beta1'"),st_matrix("`beta0'"),st_matrix("`S1'"),st_matrix("`S0'"),st_matrix("`mtexs_full'"),st_matrix("`pi1'"),st_matrix("`pi0'"),"`pot1'","`pot0'","`dkdp1'","`dkdp0'")
+								mat `pot0'=`pot0''
+								mat `pot1'=`pot1''
 								}
 							}
 						}
