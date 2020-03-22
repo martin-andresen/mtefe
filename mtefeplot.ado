@@ -293,7 +293,7 @@ twoway	`twoway' ///
 legend(`labels' title("`legendtitle'") `order') `yscale' `ylabelate' `ylabel1' `ylabel2' `ylabel3' `ylabel4' ///
 xscale(range(`min' `max')) xlabel(`=round(`min',0.1)'(0.1)`=round(`max',0.1)') name(mtePlot, replace) `graph_opts'
 
-noi di "`graph_opts'"
+noi di "`graph_opts' !"
 restore
 
 }
