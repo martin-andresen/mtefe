@@ -67,7 +67,7 @@ cap program drop mtefeplot
 				exit 301
 			}
 
-			if strpos("`graph_opts'","ytitle")==0 loc graph_opts ytitle("Treatment effect")
+			if strpos("`graph_opts'","ytitle")==0 loc ytitle ytitle("Treatment effect")
 
 			if "`cropfigure'"!="" {
 				numlist "`cropfigure'"
@@ -291,9 +291,8 @@ twoway	`twoway' ///
 , scheme(s2mono) graphregion(color(white)) plotregion(lcolor(black)) ///
 `ytitle2' xtitle("Unobserved resistance to treatment") title("Marginal Treatment Effects") ///
 legend(`labels' title("`legendtitle'") `order') `yscale' `ylabelate' `ylabel1' `ylabel2' `ylabel3' `ylabel4' ///
-xscale(range(`min' `max')) xlabel(`=round(`min',0.1)'(0.1)`=round(`max',0.1)') name(mtePlot, replace) `graph_opts'
+xscale(range(`min' `max')) xlabel(`=round(`min',0.1)'(0.1)`=round(`max',0.1)') name(mtePlot, replace) `ytitle' `graph_opts'
 
-noi di "`graph_opts' !"
 restore
 
 }
