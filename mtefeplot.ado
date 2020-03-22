@@ -1,5 +1,5 @@
 * Author: Martin Eckhoff Andresen
-* This program is part of the mtefe package.
+* This program is part of the mtefe package..
 
 cap program drop mtefeplot
 
