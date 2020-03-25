@@ -67,7 +67,7 @@ cap program drop mtefeplot
 				exit 301
 			}
 
-			if strpos("`graph_opts'","ytitle")==0 loc ytitle ytitle("Treatment effect")
+			if strpos("`graph_opts'","ytitle")==0 loc ytitle "Treatment effect"
 
 			if "`cropfigure'"!="" {
 				numlist "`cropfigure'"
@@ -256,7 +256,7 @@ if `no'==2 loc color navy
 if `no'==3 loc color dkgreen
 if `no'==4 loc color dkorange
 loc twoway `twoway' (`plottype' `mte`param''1 `sup'1, yaxis(1 3) `cmissing' lcolor(`color') lpattern(solid)) ///
-(scatter ``param'weights' `sup', yaxis(2) mcolor(`color') msymbol(smx)) ///
+(scatter ``param'weights'1 `sup'1, yaxis(2) mcolor(`color') msymbol(smx)) ///
 (function y=_b[effects:`param'], yaxis(1 3) range(`min' `max') lcolor(`color') lpattern(dash))
 loc ylabel`no' ylabel(`=_b[effects:`param']' "`=strupper("`param'")'", labcolor(`color') axis(3) add custom angle(horizontal))
 loc order1 `order1' `=2*`no'+1' "MTE (`=strupper("`param'")')"
@@ -291,7 +291,7 @@ twoway	`twoway' ///
 , scheme(s2mono) graphregion(color(white)) plotregion(lcolor(black)) ///
 `ytitle2' xtitle("Unobserved resistance to treatment") title("Marginal Treatment Effects") ///
 legend(`labels' title("`legendtitle'") `order') `yscale' `ylabelate' `ylabel1' `ylabel2' `ylabel3' `ylabel4' ///
-xscale(range(`min' `max')) xlabel(`=round(`min',0.1)'(0.1)`=round(`max',0.1)') name(mtePlot, replace) `ytitle' `graph_opts'
+xscale(range(`min' `max')) xlabel(`=round(`min',0.1)'(0.1)`=round(`max',0.1)') name(mtePlot, replace) ytitle(`ytitle') `graph_opts'
 
 restore
 
