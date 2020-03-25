@@ -249,7 +249,7 @@ exit 301
 tempname mte`param' `param'weights
 mat `mte`param''=e(mte`param')'
 mat ``param'weights'=e(weights`param')
-svmat `mte`param'
+svmat `mte`param''
 svmat ``param'weights'
 if `no'==1 loc color maroon
 if `no'==2 loc color navy
