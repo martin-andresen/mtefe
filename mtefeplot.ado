@@ -6,7 +6,7 @@ cap program drop mtefeplot
 {
 	program define mtefeplot
 		version 13.0
-		syntax [namelist], [ /* 
+		syntax  [namelist], [ /* 
 		*/ normalci /*
 		*/ cropfigure(numlist) /*
 		*/ folder(string) /*
