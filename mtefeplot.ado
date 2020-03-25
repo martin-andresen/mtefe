@@ -231,7 +231,7 @@ loc min=`sup'[1,1]
 loc max=`sup'[rowsof(`sup'),1]
 mat `mte'=e(mte)'
 svmat `mte'
-loc twoway (`plottype' `mte'1 `sup', `cmissing' yaxis(1 3)) (function y=_b[effects:ate], range(`min' `max') yaxis(1 3) lpattern(dash))
+loc twoway (`plottype' `mte'1 `sup'1, `cmissing' yaxis(1 3)) (function y=_b[effects:ate], range(`min' `max') yaxis(1 3) lpattern(dash))
 loc labels label(1 "MTE at mean")
 loc ylabelate ylabel(`=_b[effects:ate]' "ATE",  axis(3) angle(horizontal))
 loc no=0
@@ -255,7 +255,7 @@ if `no'==1 loc color maroon
 if `no'==2 loc color navy
 if `no'==3 loc color dkgreen
 if `no'==4 loc color dkorange
-loc twoway `twoway' (`plottype' `mte`param''1 `sup', yaxis(1 3) `cmissing' lcolor(`color') lpattern(solid)) ///
+loc twoway `twoway' (`plottype' `mte`param''1 `sup'1, yaxis(1 3) `cmissing' lcolor(`color') lpattern(solid)) ///
 (scatter ``param'weights' `sup', yaxis(2) mcolor(`color') msymbol(smx)) ///
 (function y=_b[effects:`param'], yaxis(1 3) range(`min' `max') lcolor(`color') lpattern(dash))
 loc ylabel`no' ylabel(`=_b[effects:`param']' "`=strupper("`param'")'", labcolor(`color') axis(3) add custom angle(horizontal))
