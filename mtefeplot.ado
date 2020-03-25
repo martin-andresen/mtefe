@@ -150,7 +150,7 @@ cap program drop mtefeplot
 					forvalues i=0/1 {
 						save `plotdata', replace
 						clear
-						mat `Y`i''=e(Y`i')
+						mat `Y`i''=e(Y`i')'
 						svmat `Y`i'', names(`Y`i'')
 						mat `support`i''=e(support`i')
 						svmat `support`i'', names(`sup')
