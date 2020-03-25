@@ -51,7 +51,7 @@ cap program drop mtefeplot
 			if "`separate'"!=""{
 				cap confirm matrix e(support1)
 				if _rc!=0 {
-					noi di in red "No potential outcomes found. These are not estimated with Local IV."
+					noi di in red "No potential outcomes found. These are not estimated with the separate approach or maximum likelihood.."
 					exit
 				}
 			}
@@ -150,7 +150,7 @@ cap program drop mtefeplot
 					forvalues i=0/1 {
 						save `plotdata', replace
 						clear
-						mat `Y`i''=e(Y`i')'
+						mat `Y`i''=e(Y`i')
 						svmat `Y`i'', names(`Y`i'')
 						mat `support`i''=e(support`i')
 						svmat `support`i'', names(`sup')
@@ -249,7 +249,7 @@ exit 301
 tempname mte`param' `param'weights
 mat `mte`param''=e(mte`param')'
 mat ``param'weights'=e(weights`param')
-svmat `mte`param''
+svmat `mte`param'
 svmat ``param'weights'
 if `no'==1 loc color maroon
 if `no'==2 loc color navy
