@@ -216,7 +216,7 @@ if "`merge'"=="merge" {
 qui merge 1:1 `sup'1 using `save', nogen
 }
 
-loc twoway `twoway' (`plottype' `mte`estimate''1 `sup'1, `cmissing')
+loc twoway `twoway' (`plottype' `mte`estimate'' `sup'1, `cmissing')
 }
 loc labels `labels' cols(`numEsts')
 }
