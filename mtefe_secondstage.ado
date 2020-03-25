@@ -872,7 +872,7 @@
 								mat  `tempsup'=`support'
 								svmat `tempsup', names(`evalgridvar')
 								forvalues i=0/1 {
-									gen `evalgridvar`i''=`evalgridvar'
+									gen `evalgridvar`i''=`evalgridvar'1
 									}
 								}
 							if "`bandwidth0'"=="" tempname bandwidth0
