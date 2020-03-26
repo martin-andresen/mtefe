@@ -151,7 +151,7 @@ cap program drop mtefeplot
 						save `plotdata', replace
 						clear
 						mat `Y`i''=e(Y`i')'
-						if rowsof(`Y`i'')>colsof(`Y`i'') mat `Y`i''=`Y`i''' // because of earlier inconsistency in saving separate outcomes as  row/col vectors.     
+						if colsof(`Y`i'')>rowsof(`Y`i'') mat `Y`i''=`Y`i''' // because of earlier inconsistency in saving separate outcomes as  row/col vectors.     
 						svmat `Y`i'', names(`Y`i'')
 						mat `support`i''=e(support`i')
 						svmat `support`i'', names(`sup')
