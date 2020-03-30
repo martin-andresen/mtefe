@@ -119,7 +119,6 @@ cap program drop mtefeplot
 							loc conflevel=r(level)
 						}
 						else {
-							noi di _rc
 							tempname confint
 							loc conflevel=e(level)
 							if "`normalci'"!="" mat `confint'=e(ci_normal)'
