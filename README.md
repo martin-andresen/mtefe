@@ -1,6 +1,8 @@
 # mtefe
 marginal treatment effects estimation with fixed effects for stata
 
+![mtefe example](https://github.com/martin-andresen/mtefe/blob/master/normal.png)
+
 <h2>Installing SSC version</h2>
 ssc install mtefe
 
