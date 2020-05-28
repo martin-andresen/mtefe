@@ -11,8 +11,9 @@ cap program drop mtefe myivparse IsStop
 		*/POLynomial(integer 0) 	/* 	Specify degree of polynomial (semiparametric model 2)
 		*/SPLines(numlist sort)		/*  Add splines for second-order and higher polynomial models with knots at numlist
 		*/DEGree(string) 			/* 	Specify degree of local polynomial smooth (semiparametric model), overruled by polynomial option in semiparametric polynomial model
-		*/YBWidth(real 0.2) 		/* 	Specify bandwidth of local polynomial smooth
+		*/YBWidth(real 0.2) 		/* 	Specify bandwidth of local polynomial smooth for ytilde on p
 		*/XBWidth(real 0) 			/*	Specify bandwidth of local polynomial smooth for use when residualizing the X. Used for semiparametric models. Default: lpoly's rule of thumb.
+		*/YTILDEBWidth(real 0)		/*	Specify bandwidth of local polynomial smooth for use when residualizing Y. Used for semiparametric models. Default: lpoly's rule of thumb.
 		*/SEMIparametric 			/*	Calculates semiparametric MTEs rather than parametric. Do not combine with fully semiparametric model.
 		*/SEParate 					/*	Uses the separate approach to compute potential outcomes and the MTEs.
 		*/MLIKelihood				/*	Uses maximum likelihood estimation - only appropriate for the joint normal model
@@ -90,6 +91,7 @@ cap program drop mtefe myivparse IsStop
 			}
 
 			if `xbwidth'==0 loc xbwidth
+			if `ytildebwidth'==0 loc ytildebwidth
 
 			if "`vce'"!="" {
 				loc numvce: word count `vce'
@@ -100,7 +102,11 @@ cap program drop mtefe myivparse IsStop
 				if `numvce'==2 {
 					gettoken one two: vce
 					capture confirm numeric variable `two'
-					if "`one'"!="cluster"|_rc {
+					if _rc!=0 {
+						display in red "Error in vce() - cluster variable `two' not found or not numeric."
+						exit
+						}
+					if "`one'"!="cluster" {
 						display in red "Error in vce() - specify only robust or cluster varname."
 						exit
 					}
@@ -696,7 +702,7 @@ cap program drop mtefe myivparse IsStop
 			if `bootreps'==0 {
 				noi mtefe_secondstage `y' `x'  [`weight'`exp'] if `touse2', evalgrid(`support') evalgrid1(`support1') evalgrid0(`support0') /*
 				*/ polynomial(`polynomial') splines(`splines') `rescale' gridpoints(`gridpoints') colnames(`colnames') numx(`numX') numr(`numR') init(`init')/*
-				*/ propscore(`p') restricted(`restricted') ybwidth(`ybwidth') xbwidth(`xbwidth') degree(`degree')  `separate' prte(`prte')  `mlikelihood' /*
+				*/ propscore(`p') restricted(`restricted') ybwidth(`ybwidth') xbwidth(`xbwidth') ytildebwidth(`ytildebwidth') degree(`degree')  `separate' prte(`prte')  `mlikelihood' /*
 				*/ uweights(`uweightsatt' `uweightsatut' `uweightslate'	`uweightsmprte1' `uweightsmprte2' `uweightsmprte3'  `uweightsprte') `savekp' `semiparametric' kernel(`kernel') norepeat1 /*
 				*/ vce(`vce') link(`link') gammaZ(`gammaZ') treatment(`d') instruments(`z') firststageoptions(`firststageoptions') `second' mtexs_ate(`mtexs_ate') mtexs_att(`mtexs_att') /*
 				*/ mtexs_atut(`mtexs_atut') mtexs_late(`mtexs_late') mtexs_prte(`mtexs_prte') mtexs_mprte1(`mtexs_mprte1') mtexs_mprte2(`mtexs_mprte2') mtexs_mprte3(`mtexs_mprte3') mtexs_full(`mtexs_full')
@@ -726,7 +732,7 @@ cap program drop mtefe myivparse IsStop
 				noi bootstrap, reps(`bootreps') level(`level') cluster(`tempclustvar2') `bsopts' notable `idcluster': /*
 				*/ mtefe_secondstage `y' `x' [`weight'`exp'], evalgrid(`support') evalgrid1(`support1') evalgrid0(`support0') numx(`numX') numr(`numR')/*
 				*/ polynomial(`polynomial') splines(`splines') `rescale' gridpoints(`gridpoints') propscore(`p') restricted(`restricted') init(`init')/*
-				*/ ybwidth(`ybwidth') xbwidth(`xbwidth') degree(`degree') kernel(`kernel')  `separate'  colnames(`colnames') clustlevels(`clustlevels') `idcluster' /*
+				*/ ybwidth(`ybwidth') ytildebwidth(`ytildebwidth') xbwidth(`xbwidth') degree(`degree') kernel(`kernel')  `separate'  colnames(`colnames') clustlevels(`clustlevels') `idcluster' /*
 				*/ `savekp' prte(`prte') uweights(`uweightsatt' `uweightsatut' `uweightslate'	`uweightsmprte1' `uweightsmprte2' `uweightsmprte3' `uweightsprte') `mlikelihood' `second' /*
 				*/ `semiparametric' `repeat1' boot link(`link') gammaZ(`gammaZ') treatment(`d') instruments(`z') firststageoptions(`firststageoptions') /*
 				*/ mtexs_ate(`mtexs_ate') mtexs_att(`mtexs_att') mtexs_atut(`mtexs_atut') mtexs_late(`mtexs_late') mtexs_prte(`mtexs_prte') mtexs_mprte1(`mtexs_mprte1') mtexs_mprte2(`mtexs_mprte2') mtexs_mprte3(`mtexs_mprte3') mtexs_full(`mtexs_full')

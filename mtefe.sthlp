@@ -43,8 +43,9 @@
 
 {syntab:Semiparametric}
 {synopt:{opt deg:ree(#)}}specify degree of local polynomial smooth in semiparametric models{p_end}
-{synopt:{opt ybw:idth(#)}}specify bandwidth of local polynomial smooth for the outcome in semiparametric models{p_end}
-{synopt:{opt xbw:idth(#)}}specify bandwidth of local polynomial smooth for X variables in the semiparametric model{p_end}
+{synopt:{opt ybw:idth(#)}}specify bandwidth of local polynomial smooth for the outcome in semiparametric models (default: 0.2){p_end}
+{synopt:{opt ytildebw:idth(#)}}specify bandwidth of local polynomial smooth to residualize Y in semiparametric models (default: ROT){p_end}
+{synopt:{opt xbw:idth(#)}}specify bandwidth of local polynomial smooth for X variables in the semiparametric model (default: ROT){p_end}
 {synopt:{opt grid:points(#)}}evaluate the local polynomial smooths of X on p at {it:#} points rather than precise propensity scores{p_end}
 {synopt:{opt kernel:(string)}}kernel for use in the semiparametric models{p_end}
 
@@ -577,7 +578,7 @@ If {cmd:semiparametric} is specified, the following matrices are stored:
 
 {synoptset 20 tabbed}{...}
 {p2col 5 20 24 2: Matrices}{p_end}
-{synopt:{cmd:e(bandwidth)}}bandwidths used in local polynomial smooths, alternatively as {cmd:e(bandwidth1)} and {cmd:e(bandwidth0)} if the separate approach is used{p_end}
+{synopt:{cmd:e(bandwidth)}}bandwidths used in local polynomial smooths, alternatively as {cmd:e(bandwidth1)} and {cmd:e(bandwidth0)} if the separate approach is used. {p_end}
 {synopt:{cmd:e(degree)}}degree in local polynomial smooth{p_end}
 
 {pstd}

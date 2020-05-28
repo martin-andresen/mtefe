@@ -20,6 +20,7 @@
 					*/REStricted(varlist fv) /*
 					*/DEGree(string) /*
 					*/YBWidth(real 0.2) /*
+					*/YTILDEBWidth(string) /*
 					*/XBWidth(string) /*
 					*/polynomial(integer 0) /*
 					*/semiparametric /*
@@ -633,7 +634,7 @@
 							foreach var in `y' `xnames' `exprestricted' `xnames' {
 								loc ++num
 								tempname e`num'
-								if "`var'"=="`y'" loc bw `ybwidth'
+								if "`var'"=="`y'" loc bw `ytildebwidth'
 								else loc bw `xbwidth'
 								if `num'<=`=`numx'+`numr'+1' replace `variable'=`var'
 								else replace `variable'=`var'*`p'
@@ -695,7 +696,7 @@
 							gen double `variable'=.
 							foreach var in `y' `xnames' {
 								loc ++num
-								if "`var'"=="`y'" loc bw `ybwidth'
+								if "`var'"=="`y'" loc bw `ytildebwidth'
 								else loc bw `xbwidth'
 								tempvar e`num'
 								gen `e`num''=.
@@ -811,6 +812,7 @@
 						tempname evalgridvar tempsup ytilde
 						mat `tempsup'=`support'
 						svmat `tempsup', names(`evalgridvar')
+						rename `evalgridvar'1 `evalgridvar'
 						if `numx'>0|`numr'>0 {
 							tempname xb0 xb10 tempclustvar
 							if "`idcluster'"!="" {
@@ -853,10 +855,20 @@
 							
 							cap drop if `dupe'
 							
-							if `polynomial'>0|("`x'"==""&"`restricted'"=="") mat rownames `bandwidth'=ytilde
-							else mat rownames `bandwidth'=`y' `colnames0' `colnamesR' `colnames1' ytilde
+							mat colnames `bandwidth'=bw
+							if `polynomial'>0|("`x'"==""&"`restricted'"=="") mat rownames `bandwidth'=MTE:`y'
+							else {
+								foreach var in `xnames' {
+									loc roweq0 `roweq0' X:`var'
+									loc roweq1 `roweq1' Xp:`var'
+ 									}
+								foreach var in `exprestricted'{
+									loc roweqR `roweqR' Restr:`var'
+									}
+								mat rownames `bandwidth'=Y:`y' `roweq0' `roweqR' `roweq1' MTE:`y'
+								}
 							
-						//Generate MTE matrix
+							//Generate MTE matrix
 							matrix `mte' = J(1,rowsof(`support'),`mtebase'[1,1])+`dkdp'
 							}
 							
@@ -883,8 +895,12 @@
 							locpoly3 `ytilde' `p' [`weight'`exp'] if `touse'&`d', degree(`degree') gen(`K1var' `dkdpvar1') noscatter at(`evalgridvar1') width(`ybwidth') nograph `kernel'
 							mat `bandwidth1'=[nullmat(`bandwidth1') \ `r(width)' ]
 							mkmat `dkdpvar1', nomissing matrix(`dkdp1')
-							if ("`x'"==""&"`restricted'"=="")|`polynomial'>0 mat rownames `bandwidth1'= ytilde
-							else mat rownames `bandwidth1'=`y' `colnames1' ytilde
+							
+							foreach var in `xnames' `exprestricted' {
+								loc roweq `roweq' X:`var'
+								}
+							if ("`x'"==""&"`restricted'"=="")|`polynomial'>0 mat rownames `bandwidth1'=Y:`y'
+							else mat rownames `bandwidth1'=Y:`y' `roweq' MTE:`y'
 							mat `dkdp1'=`dkdp1''
 							mkmat `K1var', nomissing matrix(`K1')
 							mat `K1'=`K1''
@@ -892,8 +908,8 @@
 							sort `evalgridvar0'
 							locpoly3 `ytilde' `p' [`weight'`exp']  if `touse'&!`d', degree(`degree') gen(`K0var' `dkdpvar0') noscatter at(`evalgridvar0') width(`ybwidth') nograph `kernel'
 							mat `bandwidth0'=[nullmat(`bandwidth0') \ `r(width)' ]
-							if ("`x'"==""&"`restricted'"=="")|`polynomial'>0 mat rownames `bandwidth0'=ytilde
-							else mat rownames `bandwidth0'=`y' `colnames0' `colnamesR' ytilde
+							if ("`x'"==""&"`restricted'"=="")|`polynomial'>0 mat rownames `bandwidth0'=Y:`y'
+							else mat rownames `bandwidth0'=Y:`y' `roweq' MTE:`y'
 							mkmat `dkdpvar0', nomissing matrix(`dkdp0')
 							mat `dkdp0'=`dkdp0''
 							mkmat `K0var', nomissing matrix(`K0')
