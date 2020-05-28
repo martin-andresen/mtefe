@@ -11,9 +11,9 @@ cap program drop mtefe myivparse IsStop
 		*/POLynomial(integer 0) 	/* 	Specify degree of polynomial (semiparametric model 2)
 		*/SPLines(numlist sort)		/*  Add splines for second-order and higher polynomial models with knots at numlist
 		*/DEGree(string) 			/* 	Specify degree of local polynomial smooth (semiparametric model), overruled by polynomial option in semiparametric polynomial model
-		*/YBWidth(real 0.2) 		/* 	Specify bandwidth of local polynomial smooth for ytilde on p
+		*/YBWidth(real 0) 		/* 	Specify bandwidth of local polynomial smooth for ytilde on p
 		*/XBWidth(real 0) 			/*	Specify bandwidth of local polynomial smooth for use when residualizing the X. Used for semiparametric models. Default: lpoly's rule of thumb.
-		*/YTILDEBWidth(real 0)		/*	Specify bandwidth of local polynomial smooth for use when residualizing Y. Used for semiparametric models. Default: lpoly's rule of thumb.
+		*/YTILDEBWidth(real 0)	/*	Specify bandwidth of local polynomial smooth for use when residualizing Y. Used for semiparametric models. Default: lpoly's rule of thumb.
 		*/SEMIparametric 			/*	Calculates semiparametric MTEs rather than parametric. Do not combine with fully semiparametric model.
 		*/SEParate 					/*	Uses the separate approach to compute potential outcomes and the MTEs.
 		*/MLIKelihood				/*	Uses maximum likelihood estimation - only appropriate for the joint normal model
@@ -71,7 +71,7 @@ cap program drop mtefe myivparse IsStop
 				tokenize `splines'
 				forvalues i=1/`numknots' {
 					if !inrange(``i'',0,1) {
-						display in red "Do not specify knots in splines option outside (0,1)."
+						noi display in red "Do not specify knots in splines option outside (0,1)."
 						exit
 					}
 				}
@@ -83,15 +83,13 @@ cap program drop mtefe myivparse IsStop
 				noi di in red "off 1% of the tails of the treated and untreated sample."
 				exit
 				}
-			foreach letter in x y {
+			foreach letter in x y ytilde {
 				if !inrange(``letter'bwidth',0,1) {
-					display in red "Error in `letter'bwidth option, must be between 0 and 1."
+					noi display in red "Error in `letter'bwidth option, must be between 0 and 1."
 					exit
 				}
+				if ``letter'bwidth'==0 loc `letter'bwidth
 			}
-
-			if `xbwidth'==0 loc xbwidth
-			if `ytildebwidth'==0 loc ytildebwidth
 
 			if "`vce'"!="" {
 				loc numvce: word count `vce'
@@ -831,6 +829,10 @@ cap program drop mtefe myivparse IsStop
 				noi di as text	"ATUT, LATE and PRTE) cannot be estimated. Reported parameters are weighted "
 				noi di as text	"averages within support, not rescaled so that weights sum to 1."
 			}
+			if "`ytildebwidth'"=="" {
+				noi di as text "Warning: Rule of thumb-bandwidth used for Ytilde is inappropriate in this setting."
+				}
+			
 			noi di _newline
 
 			//Plot MTE
