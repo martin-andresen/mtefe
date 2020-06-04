@@ -1,4 +1,4 @@
-*! mtefe version date 20190513
+*! mtefe version date 20200604
 * Author: Martin Eckhoff Andresen
 * This program is part of the mtefe package.
 
@@ -13,7 +13,7 @@ cap program drop mtefe myivparse IsStop
 		*/DEGree(string) 			/* 	Specify degree of local polynomial smooth (semiparametric model), overruled by polynomial option in semiparametric polynomial model
 		*/YBWidth(real 0) 		/* 	Specify bandwidth of local polynomial smooth for ytilde on p
 		*/XBWidth(real 0) 			/*	Specify bandwidth of local polynomial smooth for use when residualizing the X. Used for semiparametric models. Default: lpoly's rule of thumb.
-		*/YTILDEBWidth(real 0)	/*	Specify bandwidth of local polynomial smooth for use when residualizing Y. Used for semiparametric models. Default: lpoly's rule of thumb.
+		*/YTILDEBWidth(string)	/*	Specify bandwidth of local polynomial smooth for use when residualizing Y. Used for semiparametric models. Default: lpoly's rule of thumb.
 		*/SEMIparametric 			/*	Calculates semiparametric MTEs rather than parametric. Do not combine with fully semiparametric model.
 		*/SEParate 					/*	Uses the separate approach to compute potential outcomes and the MTEs.
 		*/MLIKelihood				/*	Uses maximum likelihood estimation - only appropriate for the joint normal model
@@ -83,13 +83,23 @@ cap program drop mtefe myivparse IsStop
 				noi di in red "off 1% of the tails of the treated and untreated sample."
 				exit
 				}
-			foreach letter in x y ytilde {
+			foreach letter in x y {
 				if !inrange(``letter'bwidth',0,1) {
 					noi display in red "Error in `letter'bwidth option, must be between 0 and 1."
 					exit
 				}
 				if ``letter'bwidth'==0 loc `letter'bwidth
 			}
+			
+			if "`ytildebwidth'"=="" loc ytildebwidth=0.2
+			else if inlist("`ytildebwidth'","ROT","rot") loc ytildebwidth=0
+			else {
+				cap confirm number `ytildebwidht'
+				if _rc!=0 {
+					noi di in red "Error in option ytildebwidth: Specify only a number between 0 and 1 or "ROT"".
+					exit
+					}
+				}
 
 			if "`vce'"!="" {
 				loc numvce: word count `vce'
@@ -158,7 +168,7 @@ cap program drop mtefe myivparse IsStop
 					exit
 				}
 				if `polynomial'>0&"`semiparametric'"!=""&`degree'!=`=`polynomial'+1' {
-					loc degree=`polynomial'
+					loc degree=`polynomial'+1
 					noi di as text "Note: Degree of semiparametric smooth should not be different than"
 					noi di as text "L+1 in the semiparametric polynomial moodel, where L is the degree"
 					noi di as text "of the polynomial. Degree reset to `=`polynomial'+1'."
@@ -829,8 +839,8 @@ cap program drop mtefe myivparse IsStop
 				noi di as text	"ATUT, LATE and PRTE) cannot be estimated. Reported parameters are weighted "
 				noi di as text	"averages within support, not rescaled so that weights sum to 1."
 			}
-			if "`ytildebwidth'"=="" {
-				noi di as text "Warning: Rule of thumb-bandwidth used for Ytilde is inappropriate in this setting."
+			if `ytildebwidth'==0 {
+				noi di as text "Warning: lpoly rule of thumb-bandwidth used for Ytilde is inappropriate in this setting."
 				}
 			
 			noi di _newline

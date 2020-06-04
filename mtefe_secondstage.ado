@@ -53,7 +53,6 @@
 					*/]
 				
 				marksample touse
-				di "`ytildebwidth'"
 				qui {
 					if "`second'"!="" loc noi noi
 					if "`weight'"=="fweight" {
@@ -850,6 +849,10 @@
 						if "`separate'"=="" {
 							tempvar K dkdpvar dkdp Vmte 
 							sort `evalgridvar'
+							if `ytildebwidth'==0 {
+								lpoly `ytilde' `p' [`weight'`exp'] if `touse', degree(`degree') noscatter at(`evalgridvar') nograph `kernel'
+								loc width width(`=r(bwidth)')
+								}
 							locpoly3 `ytilde' `p' [`weight'`exp'] if `touse', degree(`degree') gen(`K' `dkdpvar') noscatter at(`evalgridvar') `width' nograph `kernel'
 							if "`bandwidth'"=="" tempname bandwidth
 							mat `bandwidth'=[nullmat(`bandwidth') \ `r(width)' ]
@@ -894,7 +897,11 @@
 							if "`bandwidth1'"=="" tempname bandwidth1
 							tempname K1 K0 
 							
-							sort `evalgridvar1'							
+							sort `evalgridvar1'	
+							if `ytildebwidth'==0 {
+								lpoly `ytilde' `p' [`weight'`exp'] if `touse'&`d', degree(`degree') noscatter at(`evalgridvar1') nograph `kernel'
+								loc width width(`=r(bwidth)')
+								}
 							locpoly3 `ytilde' `p' [`weight'`exp'] if `touse'&`d', degree(`degree') gen(`K1var' `dkdpvar1') noscatter at(`evalgridvar1') `width' nograph `kernel'
 							mat `bandwidth1'=[nullmat(`bandwidth1') \ `r(width)' ]
 							mkmat `dkdpvar1', nomissing matrix(`dkdp1')
@@ -909,10 +916,14 @@
 							mat `K1'=`K1''
 							
 							sort `evalgridvar0'
+							if `ytildebwidth'==0 {
+								lpoly `ytilde' `p' [`weight'`exp'] if `touse'&!`d', degree(`degree') noscatter at(`evalgridvar0') nograph `kernel'
+								loc width width(`=r(bwidth)')
+								}
 							locpoly3 `ytilde' `p' [`weight'`exp']  if `touse'&!`d', degree(`degree') gen(`K0var' `dkdpvar0') noscatter at(`evalgridvar0') `width' nograph `kernel'
 							mat `bandwidth0'=[nullmat(`bandwidth0') \ `r(width)' ]
 							if ("`x'"==""&"`restricted'"=="")|`polynomial'>0 mat rownames `bandwidth0'=Y:`y'
-							else mat rownames `bandwidth0'=Y:`y' `roweq' MTE:`y'
+							else mat rownames `bandwidth0'=Y:`y' `roweq' Ytilde
 							mkmat `dkdpvar0', nomissing matrix(`dkdp0')
 							mat `dkdp0'=`dkdp0''
 							mkmat `K0var', nomissing matrix(`K0')
