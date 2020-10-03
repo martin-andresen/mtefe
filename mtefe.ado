@@ -1,4 +1,4 @@
-*! mtefe version date 20200604
+*! mtefe version date 20201002
 * Author: Martin Eckhoff Andresen
 * This program is part of the mtefe package.
 
@@ -37,6 +37,7 @@ cap program drop mtefe myivparse IsStop
 		*/savekp 					/*	Saves the variables in K(p) with predetermined names (mills, mills0, p1, p2, p3, spline1_2, spline_1_3, spline2_2 etc) for use with predict
 		*/bsopts(string)			/*  Other bootstrap options, see bootstrap
 		*/norescale					/*	Does NOT rescale the weights of the treatment effect parameters to sum to 1 in situations with limited support
+		*/all /*
 		*/]
 
 		marksample touse
@@ -152,7 +153,7 @@ cap program drop mtefe myivparse IsStop
 			}
 
 			if `gridpoints'!=0&`polynomial'!=0&"`semiparametric'"!="" {
-				display in red `"Option "gridpoints" only for use with the full semiparametric model."'
+				display in red `"Option "gridpoints" only for use with the semiparametric model."'
 				exit
 			}		
 
@@ -248,6 +249,18 @@ cap program drop mtefe myivparse IsStop
 				loc doprte prte
 			}
 
+			if "`saveweights'"!="" {
+				loc prob=0
+				foreach param in late att atut mprte1 `doprte' {
+					cap confirm variable `saveweights'`param'
+					if _rc==0 loc ++prob
+					}
+					if `prob'>0 {
+						noi di in red "Prefix `saveweights' specified in saveweights() conflicts with an existing variable. Specify a prefix in saveweights so that no existing variable exist with that prefix plus any parameter name."
+						exit 
+						}
+					}
+				
 			****************************************************
 			* Estimate first stage and evaluate common support *
 			****************************************************
@@ -322,13 +335,13 @@ cap program drop mtefe myivparse IsStop
 					mat `support0'=`support1'
 					}
 				if "`semiparametric'"!=""&"`fullsupport'"!="" {
-					tempname cat h1 h0 tempsup1 tempsup
+					tempname cat h1 h0 tempsup1 tempsup0
 
 					egen `cat'=cut(`p'), at(-0.005(0.01)1.005) icodes
 					forvalues i=0/1 {
 						if `trimsupport'>0&`d'==1 loc check &`p'>=`min'
 						if `trimsupport'>0&`d'==0 loc check &`p'<=`max'
-						levelsof `cat' if `d'==`i'&`touse'&`check', local(vals)
+						levelsof `cat' if `d'==`i'&`touse'`check', local(vals)
 						forvalues s=1/`=rowsof(`support`i'')' {
 							if inlist(`s',`=subinstr("`vals'"," ",",",.)') mat `tempsup`i''=[nullmat(`tempsup`i'') \ `support`i''[`s',1] ]
 							}					
@@ -436,8 +449,8 @@ cap program drop mtefe myivparse IsStop
 			
 			//Check gridpoints option
 			if `gridpoints'!=0 {
-				if `gridpoints'>`N' {
-					noi di as text "Note: Fewer observations used in the second stage than specified grid precision in option "
+				if `gridpoints'>=`N' {
+					noi di as text "Note: Fewer or equal observations used in the second stage than specified grid precision in option "
 					noi di as text "gridpoints. Option gridpoints ignored, local polynomial regressions performed at precise "
 					noi di as text "propensity scores."
 					loc gridpoints=0
@@ -707,15 +720,14 @@ cap program drop mtefe myivparse IsStop
 			* Run the specified MTE model *
 			*******************************
 
-			if `bootreps'==0 {
+			if `bootreps'==0 {	
 				noi mtefe_secondstage `y' `x'  [`weight'`exp'] if `touse2', evalgrid(`support') evalgrid1(`support1') evalgrid0(`support0') /*
 				*/ polynomial(`polynomial') splines(`splines') `rescale' gridpoints(`gridpoints') colnames(`colnames') numx(`numX') numr(`numR') init(`init')/*
 				*/ propscore(`p') restricted(`restricted') ybwidth(`ybwidth') xbwidth(`xbwidth') ytildebwidth(`ytildebwidth') degree(`degree')  `separate' prte(`prte')  `mlikelihood' /*
 				*/ uweights(`uweightsatt' `uweightsatut' `uweightslate'	`uweightsmprte1' `uweightsmprte2' `uweightsmprte3'  `uweightsprte') `savekp' `semiparametric' kernel(`kernel') norepeat1 /*
-				*/ vce(`vce') link(`link') gammaZ(`gammaZ') treatment(`d') instruments(`z') firststageoptions(`firststageoptions') `second' mtexs_ate(`mtexs_ate') mtexs_att(`mtexs_att') /*
+				*/ vce(`vce') link(`link') gammaZ(`gammaZ') treatment(`d') instruments(`z') firststageoptions(`firststageoptions') `second' mtexs_ate(`mtexs_ate') mtexs_att(`mtexs_att') `all' /*
 				*/ mtexs_atut(`mtexs_atut') mtexs_late(`mtexs_late') mtexs_prte(`mtexs_prte') mtexs_mprte1(`mtexs_mprte1') mtexs_mprte2(`mtexs_mprte2') mtexs_mprte3(`mtexs_mprte3') mtexs_full(`mtexs_full')
 			}
-
 
 			else if `bootreps'>0 {
 				count if `touse2'
@@ -724,7 +736,7 @@ cap program drop mtefe myivparse IsStop
 					keep if `touse2'
 				}
 				
-				//If the cluster variable is also included as fixed effects, cluster on a temprary variable and then include idcluster as fixed effects instead.
+				//If the cluster variable is also included as fixed effects, cluster on a temporary variable and then include idcluster as fixed effects instead.
 				if "`clustvar'"!="" {
 					if strpos("`x' `restricted'",".`clustvar'")>0 {
 						tempvar tempclustvar tempclustvar2
@@ -736,15 +748,15 @@ cap program drop mtefe myivparse IsStop
 						loc replace=1
 					}	
 				}
-
+				
 				noi bootstrap, reps(`bootreps') level(`level') cluster(`tempclustvar2') `bsopts' notable `idcluster': /*
-				*/ mtefe_secondstage `y' `x' [`weight'`exp'], evalgrid(`support') evalgrid1(`support1') evalgrid0(`support0') numx(`numX') numr(`numR')/*
+				*/ mtefe_secondstage `y' `x' [`weight'`exp'], evalgrid(`support') evalgrid1(`support1') evalgrid0(`support0') numx(`numX') numr(`numR') /*
 				*/ polynomial(`polynomial') splines(`splines') `rescale' gridpoints(`gridpoints') propscore(`p') restricted(`restricted') init(`init')/*
-				*/ ybwidth(`ybwidth') ytildebwidth(`ytildebwidth') xbwidth(`xbwidth') degree(`degree') kernel(`kernel')  `separate'  colnames(`colnames') clustlevels(`clustlevels') `idcluster' /*
-				*/ `savekp' prte(`prte') uweights(`uweightsatt' `uweightsatut' `uweightslate'	`uweightsmprte1' `uweightsmprte2' `uweightsmprte3' `uweightsprte') `mlikelihood' `second' /*
+				*/ ybwidth(`ybwidth') ytildebwidth(`ytildebwidth') xbwidth(`xbwidth') degree(`degree') kernel(`kernel')  `separate'  colnames(`colnames') /*clustlevels(`clustlevels') `idcluster'*/ /*
+				*/ `savekp' prte(`prte') uweights(`uweightsatt' `uweightsatut' `uweightslate'	`uweightsmprte1' `uweightsmprte2' `uweightsmprte3' `uweightsprte') `mlikelihood' `second' `all'/*
 				*/ `semiparametric' `repeat1' boot link(`link') gammaZ(`gammaZ') treatment(`d') instruments(`z') firststageoptions(`firststageoptions') /*
 				*/ mtexs_ate(`mtexs_ate') mtexs_att(`mtexs_att') mtexs_atut(`mtexs_atut') mtexs_late(`mtexs_late') mtexs_prte(`mtexs_prte') mtexs_mprte1(`mtexs_mprte1') mtexs_mprte2(`mtexs_mprte2') mtexs_mprte3(`mtexs_mprte3') mtexs_full(`mtexs_full')
-
+										
 				ereturn local clustvar "`clustvar'"
 				
 				if "`replace'"!="" {
@@ -784,6 +796,7 @@ cap program drop mtefe myivparse IsStop
 			//save a few other results
 			if rowsof(`support')!=99&"`rescale'"!="norescale" ereturn matrix tescales=`tescales'
 			if `trimsupport'!=0 ereturn matrix trimminglimits=`trimlim'
+		
 			*******************
 			* Display results *
 			*******************
@@ -837,7 +850,7 @@ cap program drop mtefe myivparse IsStop
 			if rowsof(e(support))<99&"`rescale'"=="norescale" {
 				noi di as text	"Note: Limited support. Regular, non-marginal treatment effect parameters (ATE, ATT,"	
 				noi di as text	"ATUT, LATE and PRTE) cannot be estimated. Reported parameters are weighted "
-				noi di as text	"averages within support, not rescaled so that weights sum to 1."
+				noi di as text	"averages within support, but not rescaled so that weights sum to 1."
 			}
 			if `ytildebwidth'==0 {
 				noi di as text "Warning: lpoly rule of thumb-bandwidth used for Ytilde is inappropriate in this setting."

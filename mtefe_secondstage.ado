@@ -3,7 +3,7 @@
 
 			cap program drop mtefe_secondstage
 			{
-				program define mtefe_secondstage, eclass
+				program define mtefe_secondstage, eclass sortpreserve
 					version 13.0
 					syntax varlist(fv) [if] [in] [fweight pweight], /*
 					*/PROPscore(varname) /*
@@ -50,9 +50,11 @@
 					*/norescale /*
 					*/clustlevels(string) /*
 					*/idcluster(varname) /*
+					*/all /*
 					*/]
 				
 				marksample touse
+
 				qui {
 					if "`second'"!="" loc noi noi
 					if "`weight'"=="fweight" {
@@ -617,63 +619,63 @@
 					************************
 					
 					else if `polynomial'==0&"`semiparametric'"!="" {
+						tempvar evalpoints roundp
+						
 						if "`weight'"=="pweight" loc lpolyweight aweight
 						else loc lpolyweight `weight'
 						
 						if "`ytildebwidth'"!="" loc width width(`ytildebwidth')
 						
+						if `gridpoints'==0 {
+							levelsof `p' if `touse', local(levp) hexadecimal
+							local nump: word count `levp'
+							if `N'==`nump'|"`all'"=="all" loc gridspectype=0
+							else {
+								bys `p': gen double `evalpoints'=`p' if _n==1
+								loc gridspectype=1
+								}
+							}
+						else {
+							loc gridspectype=2
+							su `p' if `touse'
+							gen double `roundp'=r(min)+round(`p'-r(min),`=(r(max)-r(min))/(`gridpoints'-1)')
+							bys `roundp': gen double `evalpoints'=`roundp' if _n==1
+							}
+						
+				
 						//LOCAL IV
 						if ("`separate'"==""&"`x'"!="")|("`separate'"==""&`numr'>0) {
 							//Run local linear regressions of X, Y and XP on p
 							nois _dots 0, title(Running local linear regressions) reps(`=2*`numx'+1+`numr'')
-							tempname floorp ceilp bandwidth
-							tempvar variable evalpoints
-							else loc gridspec at(`p') gen(`smooth')
+							tempname bandwidth variable
+											
 							loc num=0
-							gen double `variable'=.
 							fvexpand `restricted' if `touse'
 							loc exprestricted `r(varlist)'
+							gen `variable'=.
 							foreach var in `y' `xnames' `exprestricted' `xnames' {
 								loc ++num
-								tempname e`num'
+								tempvar e`num'
 								if "`var'"=="`y'" loc bw `ybwidth'
 								else loc bw `xbwidth'
 								if `num'<=`=`numx'+`numr'+1' replace `variable'=`var'
 								else replace `variable'=`var'*`p'
-								if `gridpoints'!=0 {
-									if "`var'"=="`y'" loc gridspec n(`gridpoints') gen(`evalpoints' `e`num'')
-									else loc gridspec at(`evalpoints') gen(`e`num'')
-									}
-								else loc gridspec at(`p') gen(`e`num'')
+								if `gridspectype'==0 loc gridspec at(`p') gen(`e`num'')
+								else loc gridspec at(`evalpoints') gen(`e`num'')
 								lpoly `variable' `p' [`lpolyweight'`exp'] if `touse', `gridspec' degree(1) bwidth(`bw') nograph noscatter kernel(`kernel')
 								mat `bandwidth'=[nullmat(`bandwidth') \ `r(bwidth)']
 								loc enames `enames' `e`num''
-								if `gridpoints'==0 replace `e`num''=`variable'-`e`num''
+								if `gridspectype'==2 {
+									bys `roundp' (`e`num''): replace `e`num''=`e`num''[1] if `e`num''==.
+									}
+								else if `gridspectype'==1 by `p': replace `e`num''=`e`num''[1] if `e`num''==.
+								replace `e`num''=`variable'-`e`num''
 								nois _dots `num' 0
 								}
 							noi di _newline
-								
-							if `gridpoints'!=0 {
-								tempfile dataset datasetsmooth
-								save `dataset'
-								keep if `evalpoints'!=.
-								keep `enames' `evalpoints'
-								rename `evalpoints' `p'
-								save `datasetsmooth'
-								u `dataset', clear
-								drop `enames' `evalpoints'
-								nearmrg using `datasetsmooth', nearvar(`p') nogen
-								loc num=0
-								foreach var in `y' `xnames' `exprestricted' `xnames' {
-									loc ++num
-									if `num'<=`=`numx'+`numr'+1' replace `variable'=`var'
-									else replace `variable'=`var'*`p'
-									replace `e`num''=`variable'-`e`num''
-									}
-								}
-							
 							
 							`noi' `regress' `enames' [`weight'`exp'] if `touse', nocons `vce'
+							drop `enames'
 							tempname b beta1 beta0 beta10 betaR fullb
 							mat `fullb'=e(b)
 							mat colnames `fullb'=`colnames'
@@ -693,98 +695,56 @@
 						if ("`separate'"!=""&"`x'"!="")|("`separate'"!=""&`numr'>0) {
 							nois _dots 0, title(Running double residual regression) reps(`=`numx'+1+`numr'')
 							tempname bandwidth1 bandwidth0 fullb
-							tempvar variable smooth evalpoints1 evalpoints0
-							loc num=0
+							tempvar smooth variable
 							gen double `variable'=.
+							loc num=0
 							foreach var in `y' `xnames' {
 								loc ++num
 								if "`var'"=="`y'" loc bw `ybwidth'
 								else loc bw `xbwidth'
 								tempvar e`num'
-								gen `e`num''=.
 								replace `variable'=`var'
 								forvalues dum=0/1 {
-									if `gridpoints'!=0 {
-										if "`var'"=="`y'" loc gridspec n(`gridpoints') gen(`evalpoints`dum'' `smooth')
-										else loc gridspec at(`evalpoints`dum'') gen(`smooth')
-										}
-									else loc gridspec at(`p') gen(`smooth')
+									if `gridspectype'==0 loc gridspec at(`p') gen(`smooth')
+									else loc gridspec at(`evalpoints') gen(`smooth')
 									lpoly `variable' `p' [`lpolyweight'`exp'] if `touse'&`d'==`dum', `gridspec' degree(1) bwidth(`bw') nograph noscatter kernel(`kernel')
 									mat `bandwidth`dum''=[nullmat(`bandwidth`dum'') \ `r(bwidth)']
-									if `gridpoints'==0 {
-										replace `e`num''=`variable'-`smooth' if `d'==`dum'
-										drop `smooth'
-										}
-									else {
-										tempvar smooth`dum'`num'
-										rename `smooth' `smooth`dum'`num''
-										loc smooths`dum' `smooths`dum'' `smooth`dum'`num''
-										}
+									if `gridspectype'==2 bys `roundp' (`smooth'): replace `smooth'=`smooth'[1] if `smooth'==.&`d'==`dum'
+									else if `gridspectype'==1 bys `p' (`smooth'): replace `smooth'=`smooth'[1] if `smooth'==.&`d'==`dum'
+									if `dum'==0 gen double `e`num''=`variable'-`smooth' if `d'==`dum'
+									else replace `e`num''=`variable'-`smooth' if `d'==`dum'
+									drop `smooth'
 									}
 								loc enames `enames' `e`num''
 								nois _dots `num' 0
 								}
+								
 							loc num2=0
-							if "`restricted'"!="" tempvar evalpoints
-							fvexpand `restricted' if `touse'
-							foreach var in `r(varlist)' {
-								loc ++num
-								loc ++num2
-								tempvar e`num'
-								replace `variable'=`var'
-								if `gridpoints'!=0 {
-									if `num2'==1 loc gridspec n(`gridpoints') gen(`evalpoints' `smooth')
-									else loc gridspec at(`evalpoints') gen(`smooth')
+							if "`restricted'"!="" {
+								fvexpand `restricted' if `touse'
+								foreach var in `r(varlist)' {
+									loc ++num
+									loc ++num2
+									tempvar e`num'
+									replace `variable'=`var'
+									if `gridspectype'==0 loc gridspec at(`p') gen(`e`num'')
+									else loc gridspec at(`evalpoints') gen(`e`num'')
+									lpoly `variable' `p' [`lpolyweight'`exp'] if `touse', `gridspec' degree(1) bwidth(`bw') nograph noscatter kernel(`kernel')
+									mat `bandwidth0'=[nullmat(`bandwidth0') \ `r(bwidth)']
+									if `gridspectype'==2 {
+										sort `roundp' `e`num''
+										by `roundp': replace `e`num''=`e`num''[1] if `e`num''==.
+										}
+									else if `gridspectype'==1 {
+										sort `p' `e`num''
+										by `p': replace `e`num''=`e`num''[1] if `e`num''==.
+										}
+									replace `e`num''=`variable'-`e`num''
+									loc enamesR `enamesR' `e`num''
+									nois _dots `num' 0
 									}
-								else loc gridscpec at(`p') gen(`smooth')
-								lpoly `variable' `p' [`lpolyweight'`exp'] if `touse', `gridspec' degree(1) bwidth(`xbwidth') nograph noscatter kernel(`kernel')
-								mat `bandwidth0'=[nullmat(`bandwidth0') \ `r(bwidth)']
-								if `gridpoints'==0 {
-									gen `e`num''=`variable'-`smooth'
-									drop `smooth'
-									}
-								else {
-									tempvar smoothR`num'
-									rename `smooth' `smoothR`num''
-									loc smoothsR `smoothsR' `smoothR`num''
-									}
-								loc enamesR `enamesR' `e`num''
-								nois _dots `num' 0
 								}
 							noi di _newline
-								
-							if `gridpoints'!=0 {
-								tempfile dataset datasetsmooth
-								save `dataset'
-								keep if `evalpoints1'!=.
-								keep `evalpoints' `evalpoints1' `evalpoints0' `smooths1' `smooths0' `smoothsR'
-								save `datasetsmooth'
-								u `dataset', clear
-								drop `smooths1' `smooths0' `smoothsR' `evalpoints' `evalpoints1' `evalpoints0'
-								forvalues dum=0/1 {
-									loc num=0
-									rename `p' `evalpoints`dum''
-									nearmrg using `datasetsmooth', nearvar(`evalpoints`dum'') nogen keepusing(`smooths`dum'')
-									foreach var in `y' `xnames' {
-										replace `variable'=`var'
-										loc ++num
-										replace `e`num''=`variable'-`smooth`dum'`num'' if `d'==`dum'&`touse'
-										}
-									rename `evalpoints`dum'' `p'
-									drop `smooths`dum''
-									}
-								if "`restricted'"!="" {
-									rename `p' `evalpoints'
-									nearmrg using `datasetsmooth', nearvar(`evalpoints') nogen keepusing(`smoothsR')
-									fvexpand `restricted' if `touse'
-									foreach var in `r(varlist)' {
-										replace `variable'=`var'
-										loc ++num
-										gen `e`num''=`variable'-`smoothR`num'' if `touse'
-										}
-									rename `evalpoints' `p'
-									}
-								}
 							
 							tempname beta0 beta1 beta10 betaR
 							tokenize `enames'
@@ -820,9 +780,9 @@
 							if "`idcluster'"!="" {
 								gen `tempclustvar'=`idcluster' if `touse'
 								loc i=0
-								foreach level in `clustlevels' {
+								foreach lev in `clustlevels' {
 									loc ++i
-									replace `idcluster'=`level' if `tempclustvar'==`i'
+									replace `idcluster'=`lev' if `tempclustvar'==`i'
 									}
 								}
 							if "`x'"=="" gen `xb10'=0	
@@ -853,6 +813,7 @@
 								lpoly `ytilde' `p' [`weight'`exp'] if `touse', degree(`degree') noscatter at(`evalgridvar') nograph `kernel'
 								loc width width(`=r(bwidth)')
 								}
+							else loc width width(`ytildebwidth')
 							locpoly3 `ytilde' `p' [`weight'`exp'] if `touse', degree(`degree') gen(`K' `dkdpvar') noscatter at(`evalgridvar') `width' nograph `kernel'
 							if "`bandwidth'"=="" tempname bandwidth
 							mat `bandwidth'=[nullmat(`bandwidth') \ `r(width)' ]
@@ -1048,7 +1009,7 @@
 						}
 					
 					//Temporary hack: drop empty obs created by combinations of gridpoints, semiparametric and trimsupport
-					drop if `touse'==.
+					//noi drop if `touse'==.
 					
 					//Post results
 					if `doV'==1 ereturn post `b' `V', depname(`y') esample(`touse') buildfvinfo obs(`N') `dof'
@@ -1116,7 +1077,7 @@
 
 					if "`prte'"!="" loc prte=`prtevar'
 					}
-			end
+					end
 			}
 
 			******************

@@ -186,14 +186,14 @@ covariates on p in semiparametric models. The default is {helpb lpoly}'s
 rule-of-thumb.
 
 {phang}
-{opt gridpoints(#)} is used with the fully semiparametric model only. Instead
-of running the local polynomial regressions of covariates on p at each and
-every estimated propensity score, this option allows for estimating it at
-{it:#} separate points spread out between the minimum and maximum of the
+{opt gridpoints(#)} is used with the semiparametric model only. Instead
+of running the local polynomial regressions of covariates on p at every unique 
+propensity score value, this option allows for estimating it at
+{it:#} separate points evenly spread out between the minimum and maximum of the
 propensity score distribution and then assigns every individual the predicted
 value from the closest point in this set before calculating the residuals. In
 large samples, this may provide large improvement in computation time.
-Does not affect the local polynomial regressions of Y on p that are always
+Does not affect the local polynomial regressions of Ytilde on p that are always
 performed at the points of common support.
 
 {phang}
@@ -668,4 +668,4 @@ Development version: net install mtefe, from("https://raw.githubusercontent.com/
 Article:  {it:Stata Journal}, volume 18, number 1: {browse "http://www.stata-journal.com/article.html?article=st0516":st0516}{p_end}
 
 {p 7 14 2}
-Help:  {helpb mtefeplot}, {helpb locpoly3}, {helpb nearmrg} (required for {cmd:gridpoints()}), {helpb movestay}, {helpb margte} (if installed){p_end}
+Help:  {helpb mtefeplot}, {helpb locpoly3}, {helpb movestay}, {helpb margte} (if installed){p_end}
