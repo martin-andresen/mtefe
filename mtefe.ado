@@ -95,7 +95,7 @@ cap program drop mtefe myivparse IsStop
 			if "`ytildebwidth'"=="" loc ytildebwidth=0.2
 			else if inlist("`ytildebwidth'","ROT","rot") loc ytildebwidth=0
 			else {
-				cap confirm number `ytildebwidht'
+				cap confirm number `ytildebwidth'
 				if _rc!=0 {
 					noi di in red "Error in option ytildebwidth: Specify only a number between 0 and 1 or "ROT"".
 					exit
