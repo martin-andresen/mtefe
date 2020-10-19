@@ -1,4 +1,4 @@
-*! mtefe version date 20201002
+*! mtefe version date 20201019
 * Author: Martin Eckhoff Andresen
 * This program is part of the mtefe package.
 
@@ -95,7 +95,7 @@ cap program drop mtefe myivparse IsStop
 			if "`ytildebwidth'"=="" loc ytildebwidth=0.2
 			else if inlist("`ytildebwidth'","ROT","rot") loc ytildebwidth=0
 			else {
-				cap confirm number `ytildebwidth'
+				cap confirm number `ytildebwidht'
 				if _rc!=0 {
 					noi di in red "Error in option ytildebwidth: Specify only a number between 0 and 1 or "ROT"".
 					exit
@@ -529,12 +529,13 @@ cap program drop mtefe myivparse IsStop
 			mean `d' [`weight'`exp'] if `touse2'
 			loc dbar=_b[`d']
 			mat accum `covmat'=`d' `y' `upsilon'  [`weight'`exp'] if `touse2', deviations nocons
-			mat `covmat'=`covmat'/(`N'-1)
+			mat `covmat'=`covmat'/(r(N)-1)
 			loc dVar=`covmat'[1,1]
 			loc cov_du=`covmat'[3,1]
 			loc cov_yu=`covmat'[3,2]
 			loc iv=`=`cov_yu'/`cov_du''
 			gen double `xweightslate'=((`d'-`dbar')*(`upsilon'-`upsilonbar'))/(`cov_du') if `touse2'
+			
 			mean `p' [`weight'`exp'] if `touse2'
 			loc pbar=_b[`p']
 			gen double `xweightsatt'=`p'/(`pbar') if `touse2'

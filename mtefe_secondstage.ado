@@ -158,7 +158,7 @@
 						mean `d' [`weight'`exp'] if `touse'
 						loc dbar=_b[`d']
 						mat accum `covmat'=`d' `upsilon'  [`weight'`exp'] if `touse', deviations nocons
-						mat `covmat'=`covmat'/(`N'-1)
+						mat `covmat'=`covmat'/(r(N)-1)
 						loc dVar=`covmat'[1,1]
 						loc cov_du=`covmat'[2,1]
 						gen double `xweightslate'=((`d'-`dbar')*(`upsilon'-`upsilonbar'))/(`cov_du') if `touse'
