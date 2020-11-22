@@ -41,7 +41,6 @@
 					*/mtexs_mprte3(string) /*
 					*/mtexs_full(string) /*
 					*/firststageoptions(string) /*
-					*/savekp /*
 					*/mlikelihood /*
 					*/second /*
 					*/colnames(string) /*
@@ -390,16 +389,6 @@
 							mat `fullV'=e(V)
 							}
 						
-						
-						if "`savekp'"!="" {
-							cap drop mills0 mills
-							gen double mills=-normalden(invnormal(`p')) if `touse'
-							if "`separate'"!=""|"`mlikelihood'"!="" {
-								gen double mills0=normalden(invnormal(`p'))/(1-`p')
-								gen double mills1=-normalden(invnormal(`p'))/`p'
-								}
-							}
-						
 						mat colnames `fullb'=`colnames' 
 						mat colnames `fullV'=`colnames'
 						mat rownames `fullV'=`colnames'
@@ -513,35 +502,7 @@
 							mat `sortV'=`sort',`count',`fullV''
 							mata: st_matrix("`fullV'",sort(st_matrix("`sortV'"),(1,2))[.,3..cols(st_matrix("`sortV'"))]')
 							}
-						
-						if "`savekp'"!="" {
-							forvalues k=1/`=`polynomial'' {
-								cap drop p`k'
-								gen double p`k'=((`p'^`k'-1)*`p')/(`k'+1) if `touse'
-								if "`separate'"!="" {
-									cap drop p0`k' p1`k'
-									gen double p0`k'=((1-`p'^`k')*`p')/((1-`p')*(`k'+1)) if `touse'
-									gen double p1`k'=((`p'^`k'-1))/(`k'+1) if `touse'
-									}
-								}
-							//Generate splines
-							if "`splines'"!="" {
-								loc num=0
-								forvalues knot=1/`numknots' {
-									forvalues k=2/`=`polynomial'' { 
-										cap drop spline`knot'_`k'
-										loc ++num
-										gen double spline`knot'_`k'=(1/(`k'+1))*((`p'>=`knot`knot'')*((`p'-`knot`knot'')^(`k'+1)-((1-`knot`knot'')^(`k'+1)))*`p') if `touse'
-										if "`separate'"!="" {
-											cap drop spline0`knot'_`k' spline1`knot'_`k'
-											gen double spline1`knot'_`k'=(1/((1-`p')*(`k'+1)))*(`p'*(1-`knot`knot'')^(`k'+1)-(`p'>`knot`knot'')*(`p'-`knot`knot'')^(`k'+1)) if `touse'
-											gen double spline0`knot'_`k'=(1/(`k'+1))* ((`p'>`knot`knot'')*(`p'-`knot`knot'')^(`k'+1) -  (1-`knot`knot'')^(`k'+1)) if `touse'
-											}
-										}
-									}
-								}
-							}
-							
+
 						mat colnames `fullb'=`colnames'
 						mat colnames `fullV'=`colnames'
 						mat rownames `fullV'=`colnames'

@@ -33,7 +33,7 @@ cap program drop mtefe myivparse IsStop
 		*/BOOTreps(integer 0) 		/* 	Bootstrap repetitions
 		*/norepeat1 				/*	Turns off reestimation the propensity score, mean of X and weights for each bootstrap repetition
 		*/saveweights(string) 		/*	Saves TT, TUT and LATE weights for X in variable with prefix string
-		*/prte(varname) 			/*	Computes policy-relevant treatment effects for a policy that induces a shift in propensity score from the baseline to the p indicated in varname
+		*/prte(varname) 			/*	Computes policy-relevant treatment effects for a policy that induce s a shift in propensity score from the baseline to the p indicated in varname
 		*/savekp 					/*	Saves the variables in K(p) with predetermined names (mills, mills0, p1, p2, p3, spline1_2, spline_1_3, spline2_2 etc) for use with predict
 		*/bsopts(string)			/*  Other bootstrap options, see bootstrap
 		*/norescale					/*	Does NOT rescale the weights of the treatment effect parameters to sum to 1 in situations with limited support
@@ -261,6 +261,12 @@ cap program drop mtefe myivparse IsStop
 						}
 					}
 				
+			if "`savekp'"!="" {
+				if "`semiparametric'"!="" {
+					noi di in red: "Option savekp() only for use with parametric models, option ignored."
+					loc savekp
+					}
+				}
 			****************************************************
 			* Estimate first stage and evaluate common support *
 			****************************************************
@@ -297,6 +303,8 @@ cap program drop mtefe myivparse IsStop
 					if "`first'"!="" loc noi noi
 					`noi' margins, dydx(*) post
 				}
+				test `z'
+				estadd scalar p_instruments=r(p)
 				est save "`savefirst'", replace
 			}
 			replace `p'=1 if `p'>1&`touse'
@@ -723,7 +731,7 @@ cap program drop mtefe myivparse IsStop
 				noi mtefe_secondstage `y' `x'  [`weight'`exp'] if `touse2', evalgrid(`support') evalgrid1(`support1') evalgrid0(`support0') /*
 				*/ polynomial(`polynomial') splines(`splines') `rescale' gridpoints(`gridpoints') colnames(`colnames') numx(`numX') numr(`numR') init(`init')/*
 				*/ propscore(`p') restricted(`restricted') ybwidth(`ybwidth') xbwidth(`xbwidth') ytildebwidth(`ytildebwidth') degree(`degree')  `separate' prte(`prte')  `mlikelihood' /*
-				*/ uweights(`uweightsatt' `uweightsatut' `uweightslate'	`uweightsmprte1' `uweightsmprte2' `uweightsmprte3'  `uweightsprte') `savekp' `semiparametric' kernel(`kernel') norepeat1 /*
+				*/ uweights(`uweightsatt' `uweightsatut' `uweightslate'	`uweightsmprte1' `uweightsmprte2' `uweightsmprte3'  `uweightsprte') `semiparametric' kernel(`kernel') norepeat1 /*
 				*/ vce(`vce') link(`link') gammaZ(`gammaZ') treatment(`d') instruments(`z') firststageoptions(`firststageoptions') `second' mtexs_ate(`mtexs_ate') mtexs_att(`mtexs_att') `all' /*
 				*/ mtexs_atut(`mtexs_atut') mtexs_late(`mtexs_late') mtexs_prte(`mtexs_prte') mtexs_mprte1(`mtexs_mprte1') mtexs_mprte2(`mtexs_mprte2') mtexs_mprte3(`mtexs_mprte3') mtexs_full(`mtexs_full')
 			}
@@ -752,7 +760,7 @@ cap program drop mtefe myivparse IsStop
 				*/ mtefe_secondstage `y' `x' [`weight'`exp'], evalgrid(`support') evalgrid1(`support1') evalgrid0(`support0') numx(`numX') numr(`numR') /*
 				*/ polynomial(`polynomial') splines(`splines') `rescale' gridpoints(`gridpoints') propscore(`p') restricted(`restricted') init(`init')/*
 				*/ ybwidth(`ybwidth') ytildebwidth(`ytildebwidth') xbwidth(`xbwidth') degree(`degree') kernel(`kernel')  `separate'  colnames(`colnames') /*clustlevels(`clustlevels') `idcluster'*/ /*
-				*/ `savekp' prte(`prte') uweights(`uweightsatt' `uweightsatut' `uweightslate'	`uweightsmprte1' `uweightsmprte2' `uweightsmprte3' `uweightsprte') `mlikelihood' `second' `all'/*
+				*/ prte(`prte') uweights(`uweightsatt' `uweightsatut' `uweightslate'	`uweightsmprte1' `uweightsmprte2' `uweightsmprte3' `uweightsprte') `mlikelihood' `second' `all'/*
 				*/ `semiparametric' `repeat1' boot link(`link') gammaZ(`gammaZ') treatment(`d') instruments(`z') firststageoptions(`firststageoptions') /*
 				*/ mtexs_ate(`mtexs_ate') mtexs_att(`mtexs_att') mtexs_atut(`mtexs_atut') mtexs_late(`mtexs_late') mtexs_prte(`mtexs_prte') mtexs_mprte1(`mtexs_mprte1') mtexs_mprte2(`mtexs_mprte2') mtexs_mprte3(`mtexs_mprte3') mtexs_full(`mtexs_full')
 										
@@ -763,6 +771,53 @@ cap program drop mtefe myivparse IsStop
 					rename `tempclustvar' `clustvar'
 				}
 			}
+			
+			//savekp function
+				
+			if "`savekp'"!="" {
+				if `polynomial'>0 {
+				forvalues k=1/`=`polynomial'' {
+					cap drop p`k'
+					gen double p`k'=((`p'^`k'-1)*`p')/(`k'+1) if `touse'
+					if "`separate'"!="" {
+						cap drop p0`k' p1`k'
+						gen double p0`k'=((1-`p'^`k')*`p')/((1-`p')*(`k'+1)) if `touse'
+						gen double p1`k'=((`p'^`k'-1))/(`k'+1) if `touse'
+						}
+					}
+				//Generate splines
+				if "`splines'"!="" {
+					local numknots: word count `splines'
+					tokenize `splines'
+					forvalues q=1/`numknots'  {
+						loc knot`q'=``q''
+						}
+					loc num=0
+					forvalues knot=1/`numknots' {
+						forvalues k=2/`=`polynomial'' { 
+							cap drop spline`knot'_`k'
+							loc ++num
+							gen double spline`knot'_`k'=(1/(`k'+1))*((`p'>=`knot`knot'')*((`p'-`knot`knot'')^(`k'+1)-((1-`knot`knot'')^(`k'+1)))*`p') if `touse'
+							if "`separate'"!="" {
+								cap drop spline0`knot'_`k' spline1`knot'_`k'
+								gen double spline1`knot'_`k'=(1/((1-`p')*(`k'+1)))*(`p'*(1-`knot`knot'')^(`k'+1)-(`p'>`knot`knot'')*(`p'-`knot`knot'')^(`k'+1)) if `touse'
+								gen double spline0`knot'_`k'=(1/(`k'+1))* ((`p'>`knot`knot'')*(`p'-`knot`knot'')^(`k'+1) -  (1-`knot`knot'')^(`k'+1)) if `touse'
+								}
+							}
+						}
+					}
+				}
+				
+				else {
+						cap drop mills0 mills
+						gen double mills=-normalden(invnormal(`p')) if `touse'
+						if "`separate'"!=""|"`mlikelihood'"!="" {
+							gen double mills0=normalden(invnormal(`p'))/(1-`p')
+							gen double mills1=-normalden(invnormal(`p'))/`p'
+							}
+						}
+						
+				}
 
 			******************************
 			* Test heterogeneous effects *
