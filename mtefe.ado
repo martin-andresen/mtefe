@@ -303,8 +303,6 @@ cap program drop mtefe myivparse IsStop
 					if "`first'"!="" loc noi noi
 					`noi' margins, dydx(*) post
 				}
-				test `z'
-				estadd scalar p_instruments=r(p)
 				est save "`savefirst'", replace
 			}
 			replace `p'=1 if `p'>1&`touse'
