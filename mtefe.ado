@@ -56,12 +56,6 @@ cap program drop mtefe myivparse IsStop
 				exit 
 			}
 
-			if `trimsupport'!=0 {
-				if !inrange(`trimsupport',0,100) {
-					noi di in red "Trimsupport must be a number between 0 and 100. "
-					exit 
-				}
-			}
 			if "`splines'"!=""&`polynomial'<2 {
 				noi di in red "Splines option can only be specified when using the parametric or semiparametric polynomial model with degree >1."
 				exit 
@@ -441,8 +435,6 @@ cap program drop mtefe myivparse IsStop
 						if "`first'"!="" loc noi noi
 						`noi' margins, dydx(*) post
 					}
-					test `z'
-					estadd scalar p_instruments=r(p)
 					est save "`savefirst'", replace
 				}
 				replace `p'=1 if `p'>1&`touse2'
