@@ -588,7 +588,7 @@
 						if "`ytildebwidth'"!="" loc width width(`ytildebwidth')
 						
 						if `gridpoints'==0 {
-							levelsof `p' if `touse', local(levp) hexadecimal
+							levelsof `p' if `touse', local(levp)
 							local nump: word count `levp'
 							if `N'==`nump'|"`all'"=="all" loc gridspectype=0
 							else {
