@@ -43,8 +43,8 @@
 
 {syntab:Semiparametric}
 {synopt:{opt deg:ree(#)}}specify degree of local polynomial smooth in semiparametric models{p_end}
-{synopt:{opt ybw:idth(#)}}specify bandwidth of local polynomial smooth for the outcome in semiparametric models (default: 0.2){p_end}
-{synopt:{opt ytildebw:idth(#)}}specify bandwidth of local polynomial smooth to residualize Y in semiparametric models (default: ROT){p_end}
+{synopt:{opt ybw:idth(#)}}specify bandwidth of local polynomial regressions to residualize the outcome in semiparametric models (default: ROT){p_end}
+{synopt:{opt ytildebw:idth(#)}}specify bandwidth of local polynomial regressions of Y_tilde on p (to get k(u) in semiparametric models (default: 0.2){p_end}
 {synopt:{opt xbw:idth(#)}}specify bandwidth of local polynomial smooth for X variables in the semiparametric model (default: ROT){p_end}
 {synopt:{opt grid:points(#)}}evaluate the local polynomial smooths of X on p at {it:#} points rather than precise propensity scores{p_end}
 {synopt:{opt kernel:(string)}}kernel for use in the semiparametric models{p_end}
