@@ -994,7 +994,7 @@
 							if "`splines'"!="" ereturn local title "Semiarametric polynomial MTE model with splines at `splines'"
 							else ereturn local title "Semiparametric polynomial MTE model"
 							ereturn scalar polynomial = `polynomial'
-							ereturn local bandwidth=`ybwidth'
+							ereturn matrix bandwidth=`ytildebwidth'
 							}
 						if `polynomial'==0 {
 							ereturn local title "Semiparametric MTE model"
