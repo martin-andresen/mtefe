@@ -762,6 +762,8 @@
 							expand `exp', generate(`dupe')
 							}
 						if "`x'"!="" {
+							noi mat li `mtexs_ate'
+							noi mat li `beta10'
 							if `polynomial'>0 mat `mtebase'=`beta10'*`mtexs_ate'
 							else mat `mtebase'=`beta10'*`mtexs_ate'[1..`=rowsof(`mtexs_ate')-1',1]
 							}
@@ -885,9 +887,10 @@
 							mata: st_matrix("`dkdp'",st_matrix("`K1shared'") :+ st_matrix("`dkdp1shared'"):*st_matrix("`support'")' :- ( st_matrix("`K0shared'") :-(1:-st_matrix("`support'")'):*st_matrix("`dkdp0shared'")))
 						
 							if "`x'"!=""|`numr'>0 {
-								if `polynomial'==0 mat `mtexs_full'=`mtexs_full'[1..`=rowsof(`mtexs_full')-1',1]
-								mata: st_matrix("`pot1'",J(1,`numS1',st_matrix("`beta1'")*st_matrix("`mtexs_full'")) :+ st_matrix("`K1'") :+ st_matrix("`dkdp1'"):*(st_matrix("`support1'")'))
-								mata: st_matrix("`pot0'",J(1,`numS0',st_matrix("`beta0'")*st_matrix("`mtexs_full'")) :+ st_matrix("`K0'") :-(J(1,`numS0',1):-(st_matrix("`support0'")')):*st_matrix("`dkdp0'"))
+								tempname mtexs_fulluse
+								if `polynomial'==0 mat `mtexs_fulluse'=`mtexs_full'[1..`=rowsof(`mtexs_full')-1',1]
+								mata: st_matrix("`pot1'",J(1,`numS1',st_matrix("`beta1'")*st_matrix("`mtexs_fulluse'")) :+ st_matrix("`K1'") :+ st_matrix("`dkdp1'"):*(st_matrix("`support1'")'))
+								mata: st_matrix("`pot0'",J(1,`numS0',st_matrix("`beta0'")*st_matrix("`mtexs_fulluse'")) :+ st_matrix("`K0'") :-(J(1,`numS0',1):-(st_matrix("`support0'")')):*st_matrix("`dkdp0'"))
 								}
 							else {
 								mata: st_matrix("`pot1'",st_matrix("`K1'") :+ st_matrix("`dkdp1'"):*st_matrix("`support1'")')
@@ -948,6 +951,8 @@
 							else if `polynomial'>0&"`x'"!="" mat `temp2'=`beta10'*`mtexs_`param''
 							else if "`x'"=="" mat `temp2'=0
 							mat `mte`param''=J(1,rowsof(`support'),`temp2'[1,1])+`dkdp'
+							noi mat li `mte`param''
+							noi mat li `uweights`param''
 							mat ``param''=`mte`param''*`uweights`param''
 							mat `V`param''=J(1,1,0)
 							mat `Vmte`param''=J(rowsof(`mte'),colsof(`mte'),0)
