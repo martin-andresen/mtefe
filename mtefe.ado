@@ -1,4 +1,4 @@
-*! mtefe version date 20211217
+*! mtefe version date 20220817
 * Author: Martin Eckhoff Andresen
 * This program is part of the mtefe package.
 
@@ -648,8 +648,8 @@ cap program drop mtefe myivparse IsStop
 			if "`restricted'"!="" {
 				fvexpand `restricted' if `touse2'
 				local restrictednames `r(varlist)'
-				mat accum `temp'=`restricted' [`weight'`exp'] if `touse2', means(`mtexs_full')
-				if "`x'"!="" mat `mtexs_full'=`mtexs_ate'[1..`=rowsof(`mtexs_ate')-1',1] \ `mtexs_full''
+				mat accum `temp'=`restricted' [`weight'`exp'] if `touse2', means(`mtexs_full') nocons
+				mat `mtexs_full'=`mtexs_ate' \ `mtexs_full''
 				else mat `mtexs_full'=`mtexs_full''
 				mat rownames `mtexs_full'=`xnames' _cons `restrictednames' 
 			}

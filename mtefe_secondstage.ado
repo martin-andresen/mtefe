@@ -275,8 +275,8 @@
 							mat rownames `mtexs_``i'''=`xnames' _cons
 							}
 						if "`restricted'"!="" {
-							mat accum `temp'=`restricted' [`weight'`exp'] if `touse', means(`mtexs_full')
-							if "`x'"!="" mat `mtexs_full'=`mtexs_ate'[1..`numx',1] \ `mtexs_full''
+							mat accum `temp'=`restricted' [`weight'`exp'] if `touse', means(`mtexs_full') nocons
+							mat `mtexs_full'=`mtexs_ate' \ `mtexs_full''
 							else mat `mtexs_full'=`mtexs_full''
 							}
 						else mat `mtexs_full'=`mtexs_ate'
