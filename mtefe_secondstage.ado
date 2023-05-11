@@ -1032,6 +1032,7 @@
 						forvalues i=0/1 {
 							ereturn matrix Y`i'=`pot`i''
 							ereturn matrix support`i'=`support`i''
+							ereturn matrix dkdp`i'=`dkdp`i''
 							}
 						}
 					
