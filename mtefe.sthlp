@@ -56,6 +56,7 @@
 {synopt:{opt savef:irst(string)}}save the first-stage estimates to disk as {it:string}{cmd:.ster}{p_end}
 {synopt:{opt savep:ropensity(newvar)}}save the estimated propensity scores in a new variable {it:newvar}{p_end}
 {synopt:{opt savekp}}save the variables of the K(p) [and K0(p)] functions in the dataset for postestimation{p_end}
+{synopt:{opt savek}}saves the estimates of E(Y1), E(Y0), k_1(u) and k_0(u) to the coefficient vector for bootstrapping (only maximum likelihood and separate approach){p_end}
 {synopt:{opt saveweights(string)}}save the weights for the mean of X in in the subpopulations for the treatment effect parameters in variables with prefix {it:string}{p_end}
 {synopt:{opt norescale}}Does not rescale the weights of the treatment effect parameters to sum to 1 in cases with limited support.{p_end}
 {synoptline}
@@ -450,6 +451,19 @@ weighted average within the support. Alternatively, if norescale is specified, m
 not rescale the weights when producing the parameter estimates. This parameter is equal 
 to the original only if the MTE is equal to 0 outside of the support.
 
+
+    {title:A note on fixed effects}
+
+{pstd}
+mtefe supports fixed effects, but adds all fixed effects to the coefficient matrix. This is because 
+the coefficients on the fixed effects are, in general, allowed to vary across the treated and untreated state,
+so that mtefe needs the coefficient estimates to calculate the MTE. This implies that the fixed effects need to
+be consistently estimated. A common user questions relates to the case of individual fixed effects, which in
+general cannot be consistently estimated unless the number of observations per individual approaches infinity. Thus, including
+individual fixed effects make little sense. An experimental version of mtefe exist (inquire about details) that
+instead absorbs fixed effects under the assumption that the coefficients on the fixed effects are the same in the
+treated and untreated state, but this is generally not a good idea given that most MTE models are nonlinear.
+
 {marker examples}{...}
 {title:Examples}
 
@@ -589,6 +603,8 @@ are stored:
 {p2col 5 20 24 2: Matrices}{p_end}
 {synopt:{cmd:e(Y1)}}average outcomes in the treated state{p_end}
 {synopt:{cmd:e(Y0)}}average outcomes in the untreated state{p_end}
+{synopt:{cmd:e(dkdp1)}}k_1(u){p_end}
+{synopt:{cmd:e(dkdp0)}}k_0(u){p_end}
 
 {pstd}
 Note: {cmd:bootstrap} stores its own output in {cmd:e()} as well.  See
@@ -655,7 +671,7 @@ where you can check your version date as follows:{p_end}
 This program is inspired by {helpb margte} by Brave and Walstrum (2014), who
 deserve a huge thanks.  The maximum likelihood evaluator is adapted from
 the {helpb movestay} command by Lokshin and Sajaia. Edwin Leuven, Katrine Løken, 
-Magne Mogstad also deserve thanks for various help and bug reports.
+Magne Mogstad and many other users also deserve thanks for various help and bug reports.
 
 
 {marker also_see}{...}

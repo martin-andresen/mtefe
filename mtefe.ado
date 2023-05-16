@@ -1,4 +1,4 @@
-*! mtefe version date 20220817
+*! mtefe version date 20230516
 * Author: Martin Eckhoff Andresen
 * This program is part of the mtefe package.
 
@@ -38,6 +38,7 @@ cap program drop mtefe myivparse IsStop
 		*/bsopts(string)			/*  Other bootstrap options, see bootstrap
 		*/norescale					/*	Does NOT rescale the weights of the treatment effect parameters to sum to 1 in situations with limited support
 		*/all /*
+		*/savek /*
 		*/]
 
 		marksample touse
@@ -257,7 +258,7 @@ cap program drop mtefe myivparse IsStop
 				
 			if "`savekp'"!="" {
 				if "`semiparametric'"!="" {
-					noi di in red: "Option savekp() only for use with parametric models, option ignored."
+					noi display in red "Option savekp() only for use with parametric models, option ignored."
 					loc savekp
 					}
 				}
@@ -723,7 +724,7 @@ cap program drop mtefe myivparse IsStop
 				*/ propscore(`p') restricted(`restricted') ybwidth(`ybwidth') xbwidth(`xbwidth') ytildebwidth(`ytildebwidth') degree(`degree')  `separate' prte(`prte')  `mlikelihood' /*
 				*/ uweights(`uweightsatt' `uweightsatut' `uweightslate'	`uweightsmprte1' `uweightsmprte2' `uweightsmprte3'  `uweightsprte') `semiparametric' kernel(`kernel') norepeat1 /*
 				*/ vce(`vce') link(`link') gammaZ(`gammaZ') treatment(`d') instruments(`z') firststageoptions(`firststageoptions') `second' mtexs_ate(`mtexs_ate') mtexs_att(`mtexs_att') `all' /*
-				*/ mtexs_atut(`mtexs_atut') mtexs_late(`mtexs_late') mtexs_prte(`mtexs_prte') mtexs_mprte1(`mtexs_mprte1') mtexs_mprte2(`mtexs_mprte2') mtexs_mprte3(`mtexs_mprte3') mtexs_full(`mtexs_full')
+				*/ mtexs_atut(`mtexs_atut') mtexs_late(`mtexs_late') mtexs_prte(`mtexs_prte') mtexs_mprte1(`mtexs_mprte1') mtexs_mprte2(`mtexs_mprte2') mtexs_mprte3(`mtexs_mprte3') mtexs_full(`mtexs_full') `savek'
 			}
 
 			else if `bootreps'>0 {
@@ -752,7 +753,7 @@ cap program drop mtefe myivparse IsStop
 				*/ ybwidth(`ybwidth') ytildebwidth(`ytildebwidth') xbwidth(`xbwidth') degree(`degree') kernel(`kernel')  `separate'  colnames(`colnames') /*clustlevels(`clustlevels') `idcluster'*/ /*
 				*/ prte(`prte') uweights(`uweightsatt' `uweightsatut' `uweightslate'	`uweightsmprte1' `uweightsmprte2' `uweightsmprte3' `uweightsprte') `mlikelihood' `second' `all'/*
 				*/ `semiparametric' `repeat1' boot link(`link') gammaZ(`gammaZ') treatment(`d') instruments(`z') firststageoptions(`firststageoptions') /*
-				*/ mtexs_ate(`mtexs_ate') mtexs_att(`mtexs_att') mtexs_atut(`mtexs_atut') mtexs_late(`mtexs_late') mtexs_prte(`mtexs_prte') mtexs_mprte1(`mtexs_mprte1') mtexs_mprte2(`mtexs_mprte2') mtexs_mprte3(`mtexs_mprte3') mtexs_full(`mtexs_full')
+				*/ mtexs_ate(`mtexs_ate') mtexs_att(`mtexs_att') mtexs_atut(`mtexs_atut') mtexs_late(`mtexs_late') mtexs_prte(`mtexs_prte') mtexs_mprte1(`mtexs_mprte1') mtexs_mprte2(`mtexs_mprte2') mtexs_mprte3(`mtexs_mprte3') mtexs_full(`mtexs_full') `savek'
 										
 				ereturn local clustvar "`clustvar'"
 				
@@ -844,6 +845,8 @@ cap program drop mtefe myivparse IsStop
 			*******************
 			* Display results *
 			*******************
+			if "`savek'"=="" loc dropeq=1
+			else loc dropeq=5
 			local tmp: coleq e(b)
 			loc num=0
 			foreach token in `tmp' {
@@ -864,7 +867,7 @@ cap program drop mtefe myivparse IsStop
 			if `bootreps'==0 noi di as result "`e(title)'" _col(62) as text "Obs. : " as result %10.0fc e(N) 
 			noi di as text "`e(title2)'"
 			noi di as text "Estimation method: `e(method)'"
-			noi ereturn display, level(`level') neq(`=`neq'-1') noemptycells nolstretch
+			noi ereturn display, level(`level') neq(`=`neq'-`dropeq'') noemptycells nolstretch
 			if "`semiparametric'"==""|`bootreps'>0 {
 				if "`p_obshet'"!="" noi di "Test of observable heterogeneity, p-value {col 66} `: di %12.4f `p_obshet''"
 				if "`p_unobshet'"!="" {

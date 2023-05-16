@@ -50,6 +50,7 @@
 					*/clustlevels(string) /*
 					*/idcluster(varname) /*
 					*/all /*
+					*/savek /*
 					*/]
 				
 				marksample touse
@@ -568,10 +569,13 @@
 							if "`separate'"!="" {
 								tempname dkdp1 dkdp0 pot1 pot0	
 								mata: mtefecalc_sep(st_matrix("`beta1'"),st_matrix("`beta0'"),st_matrix("`S1'"),st_matrix("`S0'"),st_matrix("`mtexs_full'"),st_matrix("`pi1'"),st_matrix("`pi0'"),"`pot1'","`pot0'","`dkdp1'","`dkdp0'")
-								mat `pot0'=`pot0''
 								mat `pot1'=`pot1''
+								mat `pot0'=`pot0''
+								mat `dkdp1'=`dkdp1''
+								mat `dkdp0'=`dkdp0''
 								}
 							}
+
 						}
 
 					
@@ -762,8 +766,6 @@
 							expand `exp', generate(`dupe')
 							}
 						if "`x'"!="" {
-							noi mat li `mtexs_ate'
-							noi mat li `beta10'
 							if `polynomial'>0 mat `mtebase'=`beta10'*`mtexs_ate'
 							else mat `mtebase'=`beta10'*`mtexs_ate'[1..`=rowsof(`mtexs_ate')-1',1]
 							}
@@ -922,6 +924,17 @@
 							}
 					mat colnames `mte'=`mtenames'
 					
+					//Name Y0,Y1,k0,k1
+					if "`separate'`mlikelihood'"!="" {
+						forvalues j=0/1 {
+							forvalues i = 1/`=rowsof(`support`j'')' {
+							loc names`j' `names`j'' u`=round(`support`j''[`i',1]*100)'
+								}
+							mat colnames `pot`j''=`names`j''
+							mat colnames `dkdp`j''=`names`j''
+						}
+					}
+
 					
 					*************************
 					* Combine all estimates *
@@ -951,8 +964,6 @@
 							else if `polynomial'>0&"`x'"!="" mat `temp2'=`beta10'*`mtexs_`param''
 							else if "`x'"=="" mat `temp2'=0
 							mat `mte`param''=J(1,rowsof(`support'),`temp2'[1,1])+`dkdp'
-							noi mat li `mte`param''
-							noi mat li `uweights`param''
 							mat ``param''=`mte`param''*`uweights`param''
 							mat `V`param''=J(1,1,0)
 							mat `Vmte`param''=J(rowsof(`mte'),colsof(`mte'),0)
@@ -973,11 +984,28 @@
 						mat colnames `V'=`colnames' `mtenames'
 						mat rownames `V'=`colnames' `mtenames'
 						}
+						
+					//IF using separate or mlikelihood and savek, add k0,k1,Y0,Y1 to b
+					if "`separate'`mlikelihood'"!=""&"`savek'"!="" {		
+						mat coleq `pot0'=Y0
+						mat coleq `dkdp0'=k0
+						mat coleq `pot1'=Y1
+						mat coleq `dkdp1'=k1
+						mat `b'=`b',`pot0',`dkdp0',`pot1',`dkdp1'
+						if  `doV'==1 {
+							loc RV=colsof(`V')
+							loc RP=colsof(`pot1')*2+colsof(`pot0')*2
+							mat `V'=[`V' , J(`RV',`RP',0) \ J(`RP',`RV',0) , J(`RP',`RP',0) ]
+							loc nnames: colfullnames `b'
+							mat colnames `V'=`nnames'
+							mat rownames `V'=`nnames'
+						}
+					}
 					
-					//Temporary hack: drop empty obs created by combinations of gridpoints, semiparametric and trimsupport
-					//noi drop if `touse'==.
+									
 					
 					//Post results
+											
 					if `doV'==1 ereturn post `b' `V', depname(`y') esample(`touse') buildfvinfo obs(`N') `dof'
 					else ereturn post `b', depname(`y') esample(`touse') buildfvinfo obs(`N') `dof'
 					if "`separate'"!="" ereturn local method "Separate approach"
@@ -1028,7 +1056,6 @@
 						}
 					
 					if "`separate'`mlikelihood'"!="" {
-				
 						forvalues i=0/1 {
 							ereturn matrix Y`i'=`pot`i''
 							ereturn matrix support`i'=`support`i''
@@ -1082,11 +1109,10 @@
 				real matrix pi1, real matrix pi0, string scalar Y1name, string scalar Y0name, string scalar dkdp1name, string scalar dkdp0name) 
 			{
 				real vector pot0, pot1, dkdp1, dkdp0
-				
 				pot1=(beta1*mtexs_full :+ pi1 * S1)'
 				pot0=(beta0*mtexs_full :+ pi0 * S0)'
-				dkdp1=pi1 * S1
-				dkdp0=pi0 * S0
+				dkdp1=(pi1 * S1)'
+				dkdp0=(pi0 * S0)'
 				st_matrix(Y1name,pot1)
 				st_matrix(Y0name,pot0)
 				st_matrix(dkdp1name,dkdp1)
