@@ -321,7 +321,7 @@ cap program drop mtefe myivparse IsStop
 					}
 				else if "`fullsupport'"=="" {
 					forvalues i=0/1 {
-						su `p' if `touse'&`d'==1
+						su `p' if `touse'&`d'==`i'
 						forvalues s=`=ceil(100*`r(min)')'/`=floor(100*`r(max)')' {
 							mat `support`i''=[nullmat(`support`i'') \ `=round(`s'/100,0.01)']
 							}
@@ -391,7 +391,7 @@ cap program drop mtefe myivparse IsStop
 			//Set sample to drop observations outside common suport
 			tempvar touse2 roundp
 			if `trimsupport'>0 {
-				mark `touse2' if (`p'<`max'&`d'==0)|(`p'>`min'&`d'==1)&`touse'
+				mark `touse2' if ((`p'<`max'&`d'==0)|(`p'>`min'&`d'==1))&`touse'
 				count if `touse'
 				loc N_full=r(N)
 				count if `touse2'
@@ -421,6 +421,11 @@ cap program drop mtefe myivparse IsStop
 			if `trimsupport'>0 {
 				if "`first'"!=""&"`margins'"!=" margins" loc noi noi
 				`noi' `link' `d' `z' `x' `restricted' [`weight'`exp'] if `touse2', `vcefirst' `firststageoptions'
+				if "`prte'"!="" {
+					//Keep the policy-induced shift in P(Z) so it can be re-anchored to the re-estimated first stage
+					tempvar pshift
+					gen double `pshift'=`prtevar'-`p' if `touse2'
+				}
 				drop `p'
 				predict double `p' if e(sample)
 				predict double `gammaZ' if e(sample), xb
@@ -440,6 +445,11 @@ cap program drop mtefe myivparse IsStop
 				}
 				replace `p'=1 if `p'>1&`touse2'
 				replace `p'=0 if `p'<0&`touse2'
+				if "`prte'"!="" {
+					tempvar prtenew
+					gen double `prtenew'=min(max(`p'+`pshift',0),1) if `touse2'
+					loc prtevar `prtenew'
+				}
 			}
 
 			if `trimobs'>0 noi di as text "Continuing without these observations"
